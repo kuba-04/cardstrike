@@ -1,94 +1,90 @@
-# 10x Astro Starter
+# CardStrike Flashcards
 
-A modern, opinionated starter template for building fast, accessible, and AI-friendly web applications.
+A web-based flashcard application designed to facilitate efficient learning through spaced repetition. CardStrike Flashcards leverages AI to generate flashcard pairs automatically from user-provided plain text, while also supporting manual creation and comprehensive flashcard management. It offers user registration, authentication, secure data storage, and a learning session view powered by a spaced repetition algorithm.
+
+## Table of Contents
+
+- [Project Name](#project-name)
+- [Project Description](#project-description)
+- [Tech Stack](#tech-stack)
+- [Getting Started Locally](#getting-started-locally)
+- [Available Scripts](#available-scripts)
+- [Project Scope](#project-scope)
+- [Project Status](#project-status)
+- [License](#license)
+
+## Project Name
+
+CardStrike Flashcards
+
+## Project Description
+
+CardStrike Flashcards is designed to streamline the process of creating and managing flashcards. The application features:
+
+- **AI-driven flashcard generation:** Automatically transforms plain text into flashcard pairs using a language model API.
+- **Manual flashcard creation:** Allows users to create flashcards by directly entering the content for both the question and answer sides.
+- **Flashcard management:** Provides options for viewing, editing, and deleting flashcards.
+- **User account system:** Supports registration, login, and secure management of user-specific flashcards.
+- **Spaced repetition integration:** Implements a learning session that schedules flashcards based on a repetition algorithm.
 
 ## Tech Stack
 
-- [Astro](https://astro.build/) v5.5.5 - Modern web framework for building fast, content-focused websites
-- [React](https://react.dev/) v19.0.0 - UI library for building interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4.0.17 - Utility-first CSS framework
+**Frontend:**
 
-## Prerequisites
+- Astro 5
+- React 19
+- TypeScript 5
+- Tailwind 4
+- Shadcn/ui
 
-- Node.js v22.14.0 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
+**Backend:**
 
-## Getting Started
+- Supabase (PostgreSQL, authentication, and storage)
+- Openrouter.ai (AI models integration for flashcard generation)
 
-1. Clone the repository:
+**CI/CD & Hosting:**
 
-```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
-```
+- GitHub Actions (CI/CD pipelines)
+- DigitalOcean (Hosting via Docker)
 
-2. Install dependencies:
+## Getting Started Locally
 
-```bash
-npm install
-```
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-3. Run the development server:
+2. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
 
-```bash
-npm run dev
-```
-
-4. Build for production:
-
-```bash
-npm run build
-```
+3. **Access the app:**
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
+- `npm run dev` - Starts the development server.
+- `npm run build` - Builds the project for production.
+- `npm run preview` - Previews the production build locally.
+- `npm run test` - Runs the test suite (if available).
 
-## Project Structure
+## Project Scope
 
-```md
-.
-├── src/
-│   ├── layouts/    # Astro layouts
-│   ├── pages/      # Astro pages
-│   │   └── api/    # API endpoints
-│   ├── components/ # UI components (Astro & React)
-│   └── assets/     # Static assets
-├── public/         # Public assets
-```
+The scope of CardStrike Flashcards includes:
 
-## AI Development Support
+- **AI Flashcard Generation:** Input any plain text to generate flashcards via AI, review generated options, and bulk save accepted cards.
+- **Manual Flashcard Creation:** Enter flashcard content manually with immediate preview and editing features.
+- **Flashcard Management:** Comprehensive view, edit, and delete capabilities for all flashcards.
+- **User Account System:** Secure registration, login, and password recovery functionalities.
+- **Spaced Repetition Integration:** Learn efficiently with flashcards scheduled according to a repetition algorithm.
 
-This project is configured with AI development tools to enhance the development experience, providing guidelines for:
+*Note: The MVP excludes advanced repetition algorithms, sharing functionality, and mobile app support.*
 
-- Project structure
-- Coding practices
-- Frontend development
-- Styling with Tailwind
-- Accessibility best practices
-- Astro and React guidelines
+## Project Status
 
-### Cursor IDE
-
-The project includes AI rules in `.cursor/rules/` directory that help Cursor IDE understand the project structure and provide better code suggestions.
-
-### GitHub Copilot
-
-AI instructions for GitHub Copilot are available in `.github/copilot-instructions.md`
-
-### Windsurf
-
-The `.windsurfrules` file contains AI configuration for Windsurf.
-
-## Contributing
-
-Please follow the AI guidelines and coding practices defined in the AI configuration files when contributing to this project.
+The project is currently in active development with a focus on building a robust MVP.
 
 ## License
 
-MIT
+This project is licensed under the MIT License.

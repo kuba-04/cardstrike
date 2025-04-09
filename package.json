@@ -1,5 +1,5 @@
 {
-  "name": "10x-astro-starter",
+  "name": "cardstrike",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
@@ -56,5 +56,8 @@
     "*.{json,css,md}": [
       "prettier --write"
     ]
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-darwin-arm64": "^4.39.0"
   }
 }
