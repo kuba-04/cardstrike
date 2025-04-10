@@ -8,15 +8,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     // Get supabase client from context
     const supabase = locals.supabase;
-    
-    // Get the current session
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
 
     // Parse request body
     const body = await request.json() as GenerateFlashcardCommand;

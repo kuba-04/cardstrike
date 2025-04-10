@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { GenerateFlashcardCommand, GenerateFlashcardResponseDTO, FlashcardCandidateDTO } from '../../types';
+import type { GenerateFlashcardCommand, GenerateFlashcardResponseDTO } from '../../types';
+import { AIService } from './ai.service';
 
 // Validation schema for generation input
 export const generateFlashcardSchema = z.object({
@@ -9,29 +10,28 @@ export const generateFlashcardSchema = z.object({
     .max(10000, 'Text cannot exceed 10000 characters')
 });
 
+// Hardcoded user ID for development
+const MOCK_USER_ID = '123e4567-e89b-12d3-a456-426614174000';
+
 export class FlashcardsService {
-  constructor(private readonly supabase: SupabaseClient) {}
+  private aiService: AIService;
+
+  constructor(private readonly supabase: SupabaseClient) {
+    this.aiService = new AIService(supabase);
+  }
 
   async generateFlashcards(command: GenerateFlashcardCommand): Promise<GenerateFlashcardResponseDTO> {
     try {
       // Validate input
       generateFlashcardSchema.parse(command);
 
-      // TODO: Replace with actual AI service call
-      // For now, we'll mock the AI response with a simple example
-      const mockCandidates: FlashcardCandidateDTO[] = [{
-        candidate_id: crypto.randomUUID(),
-        front_text: "What is the capital of France?",
-        back_text: "Paris",
-        status: 'pending'
-      }];
-
       // Create generation record in database
       const { data: generation, error } = await this.supabase
         .from('generations')
         .insert({
           source_text: command.source_text,
-          status: 'pending'
+          status: 'pending',
+          user_id: MOCK_USER_ID
         })
         .select('id')
         .single();
@@ -40,27 +40,41 @@ export class FlashcardsService {
         throw new Error(`Failed to create generation record: ${error.message}`);
       }
 
-      // Store candidates in database
-      const { error: candidatesError } = await this.supabase
-        .from('flashcard_candidates')
-        .insert(
-          mockCandidates.map(candidate => ({
-            id: candidate.candidate_id,
-            generation_id: generation.id,
-            front_content: candidate.front_text,
-            back_content: candidate.back_text,
-            status: candidate.status
-          }))
+      try {
+        // Generate flashcard candidates using AI service
+        const { candidates } = await this.aiService.generateFlashcardCandidates(command.source_text);
+
+        // Store candidates in database
+        const { error: candidatesError } = await this.supabase
+          .from('flashcard_candidates')
+          .insert(
+            candidates.map(candidate => ({
+              id: candidate.candidate_id,
+              generation_id: generation.id,
+              front_content: candidate.front_text,
+              back_content: candidate.back_text,
+              status: candidate.status,
+              user_id: MOCK_USER_ID
+            }))
+          );
+
+        if (candidatesError) {
+          throw new Error(`Failed to store flashcard candidates: ${candidatesError.message}`);
+        }
+
+        return {
+          generation_id: generation.id,
+          candidates
+        };
+      } catch (aiError) {
+        // Log AI service error
+        await this.aiService.logError(
+          aiError instanceof Error ? aiError : new Error('Unknown AI service error'),
+          MOCK_USER_ID,
+          generation.id
         );
-
-      if (candidatesError) {
-        throw new Error(`Failed to store flashcard candidates: ${candidatesError.message}`);
+        throw aiError;
       }
-
-      return {
-        generation_id: generation.id,
-        candidates: mockCandidates
-      };
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw new Error(`Invalid input: ${error.errors[0].message}`);
