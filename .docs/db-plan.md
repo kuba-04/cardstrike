@@ -51,6 +51,7 @@
 - One-to-Many: users to flashcards (flashcards.user_id → users.id)
 - One-to-Many: users to generations (generations.user_id → users.id)
 - One-to-Many: users to generation_error_logs (generation_error_logs.user_id → users.id)
+- One-to-One: flashcards to generations
 - generation_error_logs can reference a generation record.
 
 3. Indexes
