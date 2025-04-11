@@ -18,22 +18,25 @@ create table users (
 
 -- Create generations table first
 create table generations (
-    id bigserial primary key,
+    id uuid primary key default gen_random_uuid(),
     user_id uuid not null references users(id) on delete cascade,
     model varchar not null,
+    source_text text not null,
+    status varchar(20) not null default 'pending',
     generated_count integer not null,
     accepted_unedited_count integer,
     accepted_edited_count integer,
     generation_duration integer not null,
     created_at timestamptz not null default now(),
-    updated_at timestamptz not null default now()
+    updated_at timestamptz not null default now(),
+    check (status in ('pending', 'completed', 'failed'))
 );
 
 -- Create flashcards table
 create table flashcards (
-    id bigserial primary key,
+    id uuid primary key default gen_random_uuid(),
     user_id uuid not null references users(id) on delete cascade,
-    generation_id bigint references generations(id) on delete set null unique,
+    generation_id uuid references generations(id) on delete set null unique,
     front_content varchar(200) not null,
     back_content varchar(200) not null,
     created_by flashcard_origin not null,
@@ -48,20 +51,27 @@ create table flashcards (
 
 -- Create generation_error_logs table
 create table generation_error_logs (
-    id bigserial primary key,
+    id uuid primary key default gen_random_uuid(),
     user_id uuid not null references users(id) on delete cascade,
     model varchar not null,
-    generation_id bigint references generations(id) on delete set null,
+    generation_id uuid references generations(id) on delete set null,
     error_message text not null,
     error_code varchar(50),
     created_at timestamptz not null default now()
 );
 
--- Create indexes
-create index idx_flashcards_user_id on flashcards(user_id);
-create index idx_flashcards_generation_id on flashcards(generation_id);
-create index idx_generations_user_id on generations(user_id);
-create index idx_generation_error_logs_user_id on generation_error_logs(user_id);
+-- Description: Creates table for storing generated flashcard candidates before acceptance
+
+create table public.flashcard_candidates (
+    id uuid primary key default gen_random_uuid(),
+    user_id uuid not null references users(id) on delete cascade,
+    generation_id uuid not null references generations(id) on delete cascade,
+    front_content varchar(200) not null,
+    back_content varchar(200) not null,
+    status varchar(20) not null default 'pending' check (status in ('pending', 'accepted', 'rejected')),
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
 
 -- Create updated_at trigger function
 create or replace function handle_updated_at()
@@ -138,4 +148,13 @@ create policy "Users can insert their own error logs"
 
 create policy "Users can delete their own error logs"
     on generation_error_logs for delete
-    using (auth.uid() = user_id); 
+    using (auth.uid() = user_id);
+
+-- Create indexes
+create index idx_flashcards_user_id on flashcards(user_id);
+create index idx_flashcards_generation_id on flashcards(generation_id);
+create index idx_generations_user_id on generations(user_id);
+create index idx_generation_error_logs_user_id on generation_error_logs(user_id);
+
+create index idx_flashcard_candidates_user_id on flashcard_candidates(user_id);
+create index idx_flashcard_candidates_generation_id on flashcard_candidates(generation_id); 

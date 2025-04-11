@@ -1,7 +1,7 @@
 1. Tables
 
 **users**
-- id: BIGSERIAL PRIMARY KEY
+- id: UUID PRIMARY KEY
 - username: VARCHAR(100) NOT NULL
 - email: VARCHAR(255) NOT NULL UNIQUE
 - password_hash: VARCHAR(255) NOT NULL
@@ -10,9 +10,9 @@
 - updated_at: TIMESTAMPTZ NOT NULL DEFAULT now()
 
 **flashcards**
-- id: BIGSERIAL PRIMARY KEY
-- user_id: INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
-- generation_id: BIGINT REFERENCES generations(id) ON DELETE SET NULL
+- id: UUID PRIMARY KEY
+- user_id: UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE
+- generation_id: UUID REFERENCES generations(id) ON DELETE SET NULL
 - front_content: VARCHAR(200) NOT NULL
 - back_content: VARCHAR(200) NOT NULL
 - created_by: flashcard_origin NOT NULL
@@ -27,7 +27,7 @@
 *Trigger: Automatically update the `updated_at` column on record updates.*
 
 **generations**
-- id: BIGSERIAL PRIMARY KEY
+- id: UUID PRIMARY KEY
 - user_id: UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE
 - model: VARCHAR NOT NULL
 - generated_count: INTEGER NOT NULL
@@ -38,10 +38,10 @@
 - updated_at: TIMESTAMPTZ NOT NULL DEFAULT now()
 
 **generation_error_logs**
-- id: BIGSERIAL PRIMARY KEY
-- user_id: INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
+- id: UUID PRIMARY KEY
+- user_id: UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE
 - model: VARCHAR NOT NULL
-- generation_id: INTEGER REFERENCES generations(id) ON DELETE SET NULL
+- generation_id: UUID REFERENCES generations(id) ON DELETE SET NULL
 - error_message: TEXT NOT NULL
 - error_code: VARCHAR(50)
 - created_at: TIMESTAMPTZ NOT NULL DEFAULT now()
