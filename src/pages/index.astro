@@ -1,11 +1,14 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import { FlashcardGenerationView } from '@/components/FlashcardGenerationView';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 ---
 
 <Layout title="Generate Flashcards - CardStrike">
   <main class="container mx-auto px-4 py-8">
     <h1 class="text-4xl font-bold mb-8">Generate Flashcards</h1>
-    <FlashcardGenerationView client:load />
+    <ErrorBoundary client:load>
+      <FlashcardGenerationView client:load />
+    </ErrorBoundary>
   </main>
 </Layout>

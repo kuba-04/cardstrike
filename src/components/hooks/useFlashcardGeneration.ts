@@ -35,6 +35,22 @@ export type UseFlashcardGenerationReturn = {
   cancelEditing: () => void;
 };
 
+async function handleApiResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error('Please sign in to continue');
+    }
+    if (response.status === 429) {
+      throw new Error('Too many requests. Please try again later');
+    }
+    const errorData = await response.json().catch(() => null);
+    throw new Error(
+      errorData?.message || `Request failed with status ${response.status}`
+    );
+  }
+  return response.json();
+}
+
 export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
   const [sourceText, setSourceText] = useState('');
   const [generationId, setGenerationId] = useState<string | null>(null);
@@ -55,11 +71,7 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
         body: JSON.stringify({ source_text: sourceText } as GenerateFlashcardCommand)
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate flashcards');
-      }
-
-      const data = await response.json() as GenerateFlashcardResponseDTO;
+      const data = await handleApiResponse<GenerateFlashcardResponseDTO>(response);
       setGenerationId(data.generation_id);
       setCandidates(data.candidates.map(candidate => ({
         ...candidate,
@@ -71,6 +83,7 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
       })));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      throw err; // Re-throw for toast handling
     } finally {
       setIsLoadingGeneration(false);
     }
@@ -88,9 +101,7 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
         method: 'PUT'
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to reject candidate');
-      }
+      await handleApiResponse(response);
 
       setCandidates(prev => prev.map(c => 
         c.candidate_id === candidateId 
@@ -104,6 +115,7 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
           ? { ...c, is_rejecting: false }
           : c
       ));
+      throw err;
     }
   };
 
@@ -121,9 +133,7 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
         body: JSON.stringify(updateData)
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update candidate');
-      }
+      await handleApiResponse(response);
 
       setCandidates(prev => prev.map(c => 
         c.candidate_id === candidateId 
@@ -144,6 +154,7 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
           ? { ...c, is_saving_edit: false }
           : c
       ));
+      throw err;
     }
   };
 
@@ -156,17 +167,15 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
         method: 'PUT'
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to complete review');
-      }
-
-      const data = await response.json() as CompleteGenerationResponseDTO;
+      await handleApiResponse<CompleteGenerationResponseDTO>(response);
+      
       // Reset state after successful completion
       setSourceText('');
       setGenerationId(null);
       setCandidates([]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      throw err;
     } finally {
       setIsLoadingCompletion(false);
     }
