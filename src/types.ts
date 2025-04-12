@@ -90,7 +90,7 @@ export type FlashcardCandidateDTO = {
   candidate_id: string
   front_text: string
   back_text: string
-  status: 'pending' | 'accepted' | 'rejected'
+  status: 'pending' | 'accepted' | 'edited'
 }
 
 /**
@@ -108,7 +108,6 @@ export type GenerateFlashcardResponseDTO = {
 export type UpdateFlashcardCandidateCommand = {
   front_text: string
   back_text: string
-  accept: boolean
 }
 
 /**

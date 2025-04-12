@@ -36,7 +36,7 @@ create table generations (
 create table flashcards (
     id uuid primary key default gen_random_uuid(),
     user_id uuid not null references users(id) on delete cascade,
-    generation_id uuid references generations(id) on delete set null unique,
+    generation_id uuid,
     front_content varchar(200) not null,
     back_content varchar(200) not null,
     created_by flashcard_origin not null,
@@ -46,7 +46,8 @@ create table flashcards (
     repetition_count integer,
     ease_factor numeric(4,2),
     created_at timestamptz not null default now(),
-    updated_at timestamptz not null default now()
+    updated_at timestamptz not null default now(),
+    foreign key (generation_id) references generations(id) on delete set null
 );
 
 -- Create generation_error_logs table
@@ -68,7 +69,7 @@ create table public.flashcard_candidates (
     generation_id uuid not null references generations(id) on delete cascade,
     front_content varchar(200) not null,
     back_content varchar(200) not null,
-    status varchar(20) not null default 'pending' check (status in ('pending', 'accepted', 'rejected')),
+    status varchar(20) not null default 'pending' check (status in ('pending', 'accepted', 'rejected', 'edited')),
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
 );

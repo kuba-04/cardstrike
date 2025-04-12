@@ -25,8 +25,7 @@ export const generateFlashcardSchema = z.object({
 
 export const updateCandidateSchema = z.object({
   front_text: z.string().min(1, 'Front text cannot be empty'),
-  back_text: z.string().min(1, 'Back text cannot be empty'),
-  accept: z.boolean()
+  back_text: z.string().min(1, 'Back text cannot be empty')
 });
 
 export const listFlashcardsSchema = z.object({
@@ -175,7 +174,7 @@ export class FlashcardsService {
         .update({
           front_content: command.front_text,
           back_content: command.back_text,
-          status: command.accept ? 'accepted' : 'rejected',
+          status: 'edited',
           updated_at: new Date().toISOString()
         })
         .eq('id', candidateId)
@@ -193,6 +192,43 @@ export class FlashcardsService {
           back_text: command.back_text
         }
       };
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw new Error(`Invalid input: ${error.errors[0].message}`);
+      }
+      throw error;
+    }
+  }
+
+  async rejectCandidate(
+    candidateId: string
+  ): Promise<void> {
+    try {
+      // Get the candidate to verify it exists and belongs to the user
+      const { data: candidate, error: fetchError } = await this.supabase
+        .from('flashcard_candidates')
+        .select('id, generation_id')
+        .eq('id', candidateId)
+        .eq('user_id', MOCK_USER_ID)
+        .single();
+
+      if (fetchError || !candidate) {
+        throw new Error('Flashcard candidate not found');
+      }
+
+      // Update the candidate
+      const { error: updateError } = await this.supabase
+        .from('flashcard_candidates')
+        .update({
+          status: 'rejected',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', candidateId)
+        .eq('user_id', MOCK_USER_ID);
+
+      if (updateError) {
+        throw new Error(`Failed to update flashcard candidate: ${updateError.message}`);
+      }
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw new Error(`Invalid input: ${error.errors[0].message}`);
@@ -490,12 +526,15 @@ export class FlashcardsService {
       // Calculate statistics
       const stats = {
         total_candidates: candidates.length,
-        accepted: candidates.filter(c => c.status === 'accepted').length,
-        rejected: candidates.filter(c => c.status === 'rejected').length
+        accepted_unedited: candidates.filter(c => c.status === 'pending').length,
+        accepted_edited: candidates.filter(c => c.status === 'edited').length,
+        rejected: candidates.filter(c => c.status === 'rejected').length,
       };
 
+      console.log('stats: ', stats);
+
       // Create flashcards for accepted candidates
-      const acceptedCandidates = candidates.filter(c => c.status === 'accepted');
+      const acceptedCandidates = candidates.filter(c => c.status === 'pending' || c.status === 'edited');
       const savedFlashcards: FlashcardDTO[] = [];
 
       for (const candidate of acceptedCandidates) {
@@ -505,7 +544,7 @@ export class FlashcardsService {
             front_content: candidate.front_content,
             back_content: candidate.back_content,
             user_id: userId,
-            created_by: 'AI',
+            created_by: candidate.status === 'edited' ? 'AI_EDIT' : 'AI_FULL',
             generation_id: generationId
           })
           .select()
@@ -526,20 +565,30 @@ export class FlashcardsService {
       }
 
       // Update generation status
-      await this.supabase
+      const { data: updateResult, error: updateError } = await this.supabase
         .from('generations')
         .update({
           status: 'completed',
-          accepted_unedited_count: stats.accepted,
-          accepted_edited_count: 0, // We could track this separately if needed
-          completed_at: new Date().toISOString()
+          accepted_unedited_count: stats.accepted_unedited,
+          accepted_edited_count: stats.accepted_edited
         })
         .eq('id', generationId)
         .eq('user_id', userId);
 
+      if (updateError) {
+        console.error('Failed to update generation:', updateError);
+        throw new Error(`Failed to update generation: ${updateError.message}`);
+      }
+
+      console.log('Generation update result:', updateResult);
+
       return {
         message: 'Generation review completed',
-        stats,
+        stats: {
+          total_candidates: stats.total_candidates,
+          accepted: stats.accepted_unedited + stats.accepted_edited,
+          rejected: stats.rejected
+        },
         saved_flashcards: savedFlashcards
       };
     } catch (error) {

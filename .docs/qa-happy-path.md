@@ -24,35 +24,37 @@ curl -X POST "http://localhost:3001/api/flashcards/generate" \
 
 ---
 
-### 2. Accept the Generated Flashcard
-
-_(Simulate accepting by updating the flashcard’s status to "accepted")_
-
-```bash
-curl -X PUT "http://localhost:3001/api/flashcards/b4fdc3ac-4fd2-43ab-9da0-ad755e3747c7" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "front_text": "What is the capital of France?",
-    "back_text": "Paris",
-    "status": "accepted"
-  }'
-```
-
----
-
-### 3. Edit the Accepted Flashcard
+### 2. Edit the Candidate
 
 _(Make further changes to the flashcard details)_
 
 ```bash
-curl -X PUT "http://localhost:3001/api/flashcards/<FLASHCARD_ID>" \
+curl -X PUT "http://localhost:3001/api/flashcards/candidates/8f71da8a-8f47-4945-84bb-a1a978bd0835" \
   -H "Content-Type: application/json" \
   -d '{
-    "front_text": "What benefits does Astro provide?",
-    "back_text": "Astro delivers fast load times, server-side rendering, and a modern developer experience.",
-    "status": "accepted"
+    "front_text": "How to say hello in arabic?",
+    "back_text": "مرحبا | Marhaba"
   }'
 ```
+---
+
+### 3. Reject the Candidate
+
+_(Make further changes to the flashcard details)_
+
+```bash
+curl -X PUT "http://localhost:3001/api/flashcards/candidates/df7e5eb4-e184-418e-88b2-699295bf264f/reject" \
+```
+---
+
+### 3. Complete AI generation
+
+_(Make further changes to the flashcard details)_
+
+```bash
+curl -X PUT "http://localhost:3001/api/flashcards/generations/cf8eb352-42b7-4135-b579-e56ad4717ed9/complete" \
+```
+
 
 ---
 

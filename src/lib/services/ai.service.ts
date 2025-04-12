@@ -28,6 +28,12 @@ export class AIService {
         front_text: "Which is the largest planet in our solar system?",
         back_text: "Jupiter",
         status: 'pending'
+      },
+      {
+        candidate_id: crypto.randomUUID(),
+        front_text: "How to say hello in arabic?",
+        back_text: "مرحبا",
+        status: 'pending'
       }
     ];
 
