@@ -412,6 +412,7 @@ export class FlashcardsService {
         .update({
           front_content: command.front_text,
           back_content: command.back_text,
+          created_by: 'AI_EDIT',
           updated_at: new Date().toISOString()
         })
         .eq('id', flashcardId)
@@ -531,8 +532,6 @@ export class FlashcardsService {
         rejected: candidates.filter(c => c.status === 'rejected').length,
       };
 
-      console.log('stats: ', stats);
-
       // Create flashcards for accepted candidates
       const acceptedCandidates = candidates.filter(c => c.status === 'pending' || c.status === 'edited');
       const savedFlashcards: FlashcardDTO[] = [];
@@ -579,8 +578,6 @@ export class FlashcardsService {
         console.error('Failed to update generation:', updateError);
         throw new Error(`Failed to update generation: ${updateError.message}`);
       }
-
-      console.log('Generation update result:', updateResult);
 
       return {
         message: 'Generation review completed',
