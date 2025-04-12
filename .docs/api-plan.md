@@ -152,7 +152,7 @@ REST API Plan
   - Success: 200 OK
   - Errors: 400 for validation issues, 404 Not Found, 401 Unauthorized
 
-- POST /api/flashcards/generations/{generation_id}/complete
+- PUT /api/flashcards/generations/{generation_id}/complete
   - Description: Complete the review of AI-generated candidates and save accepted ones
   - Request Payload: {}
   - Response Payload:
