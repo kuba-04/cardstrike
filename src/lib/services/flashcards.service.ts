@@ -14,7 +14,7 @@ import type {
   DeleteFlashcardResponseDTO,
   CompleteGenerationResponseDTO
 } from '../../types';
-import { AIService } from './ai.service';
+import { OpenRouterFlashcardService } from './openrouter-flashcard.service';
 
 // Validation schemas
 export const generateFlashcardSchema = z.object({
@@ -49,13 +49,13 @@ export const updateFlashcardSchema = z.object({
 export const MOCK_USER_ID = '123e4567-e89b-12d3-a456-426614174000';
 
 // Default AI model configuration
-const DEFAULT_MODEL = 'anthropic/claude-3-opus-20240229';
+const DEFAULT_MODEL = 'openai/gpt-4o-mini';
 
 export class FlashcardsService {
-  private aiService: AIService;
+  private aiService: OpenRouterFlashcardService;
 
   constructor(private readonly supabase: SupabaseClient) {
-    this.aiService = new AIService(supabase);
+    this.aiService = new OpenRouterFlashcardService();
   }
 
   async generateFlashcards(command: GenerateFlashcardCommand): Promise<GenerateFlashcardResponseDTO> {
@@ -80,14 +80,14 @@ export class FlashcardsService {
         .single();
 
       if (error) {
-        throw new Error(`Failed to create generation record: ${error.message}`);
+        throw new Error(`DB Error: Failed to create generation record: ${error.message}`);
       }
 
       try {
         const startTime = Date.now();
         
-        // Generate flashcard candidates using AI service
-        const { candidates } = await this.aiService.generateFlashcardCandidates(command.source_text);
+        // Generate flashcard candidates using OpenRouter service
+        const { candidates } = await this.aiService.generateFlashcards(command.source_text);
         
         const generationDuration = Date.now() - startTime;
 
@@ -128,16 +128,11 @@ export class FlashcardsService {
         await this.supabase
           .from('generations')
           .update({
-            status: 'failed'
+            status: 'failed',
+            error_message: aiError instanceof Error ? aiError.message : 'Unknown error'
           })
           .eq('id', generation.id);
 
-        // Log AI service error
-        await this.aiService.logError(
-          aiError instanceof Error ? aiError : new Error('Unknown AI service error'),
-          MOCK_USER_ID,
-          generation.id
-        );
         throw aiError;
       }
     } catch (error) {
