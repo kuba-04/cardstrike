@@ -1,0 +1,11 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import ManualFlashcardForm from '@/components/ManualFlashcardForm';
+---
+
+<Layout title="Create Flashcard">
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Create New Flashcard</h1>
+    <ManualFlashcardForm client:load />
+  </main>
+</Layout> 
