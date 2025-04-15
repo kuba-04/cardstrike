@@ -1,22 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "@/components/ui/link";
 import { toast } from 'sonner';
+import { useAuth } from "./providers/AuthProvider";
+import { LoadingIndicator } from "./ui/loading-indicator";
 
 export function Navbar() {
+    const { user, loading, signOut } = useAuth();
+
     const handleLogout = async () => {
         try {
-            const response = await fetch("/api/auth/logout", {
-                method: "POST",
-                credentials: "include",
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.details || 'Failed to logout');
-            }
-
-            // Redirect to login page after successful logout
-            window.location.href = "/";
+            await signOut();
             toast.success('Successfully logged out');
         } catch (error) {
             console.error('Error logging out:', error);
@@ -32,14 +25,27 @@ export function Navbar() {
                 </Link>
 
                 <div className="flex items-center gap-4">
-                    <Button
-                        variant="ghost"
-                        onClick={handleLogout}
-                        className="text-foreground hover:bg-accent hover:text-accent-foreground"
-                        aria-label="Log out"
-                    >
-                        Log out
-                    </Button>
+                    {loading ? (
+                        <LoadingIndicator />
+                    ) : user ? (
+                        <Button
+                            variant="ghost"
+                            onClick={handleLogout}
+                            className="text-foreground hover:bg-accent hover:text-accent-foreground"
+                            aria-label="Log out"
+                        >
+                            Log out
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="ghost"
+                            asChild
+                            className="text-foreground hover:bg-accent hover:text-accent-foreground"
+                            aria-label="Log in"
+                        >
+                            <Link href="/auth/login">Log in</Link>
+                        </Button>
+                    )}
                 </div>
             </div>
         </nav>

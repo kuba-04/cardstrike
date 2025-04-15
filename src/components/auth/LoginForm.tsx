@@ -5,37 +5,28 @@ import { Label } from "@/components/ui/label"
 import { AuthForm } from "./AuthForm"
 import { AuthError } from "./AuthError"
 import { Link } from "@/components/ui/link"
+import { useAuth } from "../providers/AuthProvider"
+import { toast } from "sonner"
 
 export function LoginForm() {
     const [error, setError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(false)
+    const { signIn } = useAuth()
 
     const handleSubmit = async (formData: FormData) => {
         try {
             setError(null)
             setIsLoading(true)
 
-            const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: formData.get('email'),
-                    password: formData.get('password'),
-                }),
-            })
+            const email = formData.get('email') as string
+            const password = formData.get('password') as string
 
-            const data = await response.json()
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Failed to sign in')
-            }
-
-            // Redirect to dashboard on success using Astro's View Transitions
+            await signIn(email, password)
+            toast.success('Successfully signed in')
             window.location.href = '/'
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+            toast.error(err instanceof Error ? err.message : 'Failed to sign in')
         } finally {
             setIsLoading(false)
         }

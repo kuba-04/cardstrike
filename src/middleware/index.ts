@@ -1,48 +1,48 @@
-import { sequence } from 'astro/middleware';
-import type { MiddlewareHandler } from 'astro';
-import { createSupabaseServerInstance } from '../db/supabase.client';
-import { authMiddleware } from './auth.middleware';
+import { defineMiddleware } from 'astro:middleware';
+import { createSupabaseServerClient } from '../db/supabase.client';
 
-// Public paths that don't require authentication
+// Public paths - Auth API endpoints & Server-Rendered Astro Pages
 const PUBLIC_PATHS = [
-  '/',
-  '/auth/login',
-  '/auth/register',
-  '/auth/reset-password',
-  '/auth/callback',
+  // Server-Rendered Astro Pages
+  "/auth/login",
+  "/auth/register",
+  "/auth/reset-password",
+  // Auth API endpoints
+  "/api/auth/login",
+  "/api/auth/register",
+  "/api/auth/reset-password",
 ];
 
-const authProtectionMiddleware: MiddlewareHandler = async ({ locals, cookies, request, redirect }, next) => {
-  // Initialize Supabase client with proper cookie handling
-  const supabase = createSupabaseServerInstance({
-    cookies,
-    headers: request.headers,
-  });
+export const onRequest = defineMiddleware(
+  async ({ locals, cookies, url, request, redirect }, next) => {
+    // Skip auth check for public paths
+    if (PUBLIC_PATHS.includes(url.pathname)) {
+      return next();
+    }
 
-  // Store Supabase client in locals
-  locals.supabase = supabase;
+    const supabase = createSupabaseServerClient({
+      headers: request.headers,
+      cookies: {
+        get: (name) => cookies.get(name)?.value,
+        set: (name, value, options) => cookies.set(name, value, options),
+      },
+    });
 
-  // Get the current path
-  const url = new URL(request.url);
-  const isPublicPath = PUBLIC_PATHS.includes(url.pathname);
+    // IMPORTANT: Always get user session first before any other operations
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  // Get the user session
-  const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      locals.user = {
+        email: user.email ?? null,
+        id: user.id,
+      };
+    } else if (!PUBLIC_PATHS.includes(url.pathname)) {
+      // Redirect to login for protected routes
+      return redirect('/auth/login');
+    }
 
-  if (user) {
-    // Store user in locals if authenticated
-    locals.user = {
-      id: user.id,
-      email: user.email ?? null,
-    };
-  } else if (!isPublicPath) {
-    // Redirect to login for protected routes
-    return redirect('/auth/login');
-  }
-
-  // Continue to the next middleware or route handler
-  return next();
-};
-
-// Run auth middleware first to sync users, then auth protection middleware
-export const onRequest = sequence(authMiddleware, authProtectionMiddleware); 
+    return next();
+  },
+); 

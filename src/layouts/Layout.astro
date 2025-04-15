@@ -1,8 +1,6 @@
 ---
 import "../styles/global.css";
-
-import { Toaster } from "sonner";
-import { Navbar } from "@/components/Navbar";
+import { AppShell } from "@/components/AppShell";
 
 interface Props {
   title: string;
@@ -22,11 +20,9 @@ const { title } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
-    <Navbar client:load />
-    <main>
+    <AppShell client:only="react">
       <slot />
-    </main>
-    <Toaster richColors closeButton client:load />
+    </AppShell>
   </body>
 </html>
 
@@ -51,9 +47,5 @@ const { title } = Astro.props;
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-  }
-
-  main {
-    padding: 1rem;
   }
 </style>
