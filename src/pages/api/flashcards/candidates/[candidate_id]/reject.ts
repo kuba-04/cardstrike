@@ -14,9 +14,18 @@ export const PUT: APIRoute = async ({ params, locals }) => {
       });
     }
 
-    // Initialize service and accept candidate
+    // Get authenticated user
+    const { data: { user }, error: authError } = await locals.supabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Initialize service and reject candidate
     const flashcardsService = new FlashcardsService(locals.supabase);
-    const result = await flashcardsService.rejectCandidate(candidate_id);
+    const result = await flashcardsService.rejectCandidate(user.id, candidate_id);
 
     return new Response(JSON.stringify(result), {
       status: 200,
@@ -27,7 +36,8 @@ export const PUT: APIRoute = async ({ params, locals }) => {
     
     const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     const status = errorMessage.includes('Invalid input') ? 400 : 
-                  errorMessage.includes('not found') ? 404 : 500;
+                  errorMessage.includes('not found') ? 404 :
+                  errorMessage.includes('Unauthorized') ? 401 : 500;
     
     return new Response(JSON.stringify({ error: errorMessage }), {
       status,

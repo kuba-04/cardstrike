@@ -81,7 +81,7 @@ export class OpenRouterService {
   constructor() {
     // Initialize with environment variables
     this._defaultSystemMessage = import.meta.env.OPENROUTER_DEFAULT_SYSTEM_MESSAGE || 'You are a helpful assistant.';
-    this._modelName = import.meta.env.OPENROUTER_MODEL_NAME || 'openai/gpt-4o-mini';
+    this._modelName = import.meta.env.OPENROUTER_MODEL_NAME || 'google/gemini-2.5-pro-exp-03-25:free';
     this._apiUrl = import.meta.env.OPENROUTER_API_URL;
 
     // Default model parameters

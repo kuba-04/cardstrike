@@ -1,17 +1,24 @@
 import type { APIRoute } from "astro";
-import { supabaseClient } from "@/db/supabase.client";
+import { createSupabaseServerClient } from '@/db/supabase.client';
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ cookies, request }) => {
   try {
-    // Clear the auth cookie
-    cookies.delete("sb-auth-token", { 
-      path: "/",
+    const supabase = createSupabaseServerClient({
+      headers: request.headers,
+      cookies: {
+        get: (name) => cookies.get(name)?.value,
+        set: (name, value, options) => cookies.set(name, value, options),
+      },
     });
 
     // Sign out from Supabase
-    await supabaseClient.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      throw error;
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

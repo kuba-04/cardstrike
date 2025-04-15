@@ -6,6 +6,15 @@ export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
+    // Get authenticated user
+    const { data: { user }, error: authError } = await locals.supabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     // Parse request body
     const body = await request.json() as GenerateFlashcardCommand;
     
@@ -21,7 +30,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     console.error('Error generating flashcards:', error);
     
     const errorMessage = error instanceof Error ? error.message : 'Internal server error';
-    const status = errorMessage.includes('Invalid input') ? 400 : 500;
+    const status = errorMessage.includes('Invalid input') ? 400 : 
+                  errorMessage.includes('Unauthorized') ? 401 : 500;
     
     return new Response(JSON.stringify({ error: errorMessage }), {
       status,

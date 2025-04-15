@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro'
 import { z } from 'zod'
-import { FlashcardsService, MOCK_USER_ID } from '../../../lib/services/flashcards.service'
+import { FlashcardsService } from '../../../lib/services/flashcards.service'
 
 // Input validation schemas
 const QuerySchema = z.object({
@@ -19,18 +19,30 @@ export const prerender = false
 
 export const GET: APIRoute = async ({ request, locals }) => {
   try {
+    // Get authenticated user
+    const { data: { user }, error: authError } = await locals.supabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     // Parse query parameters
     const url = new URL(request.url)
     const params = Object.fromEntries(url.searchParams)
 
+    // Validate query parameters
+    const validatedParams = QuerySchema.parse({
+      page: params.page,
+      limit: params.limit,
+      filter: params.filter,
+      sort: params.sort
+    });
+
     // Initialize service and list flashcards
     const flashcardsService = new FlashcardsService(locals.supabase)
-    const result = await flashcardsService.listFlashcards(MOCK_USER_ID, {
-      page: Number(params.page) || 1,
-      limit: Number(params.limit) || 20,
-      filter: params.filter as 'ai' | 'manual' | undefined,
-      sort: params.sort as 'created_at' | undefined
-    })
+    const result = await flashcardsService.listFlashcards(user.id, validatedParams)
 
     return new Response(JSON.stringify(result), {
       status: 200,
@@ -40,7 +52,8 @@ export const GET: APIRoute = async ({ request, locals }) => {
     console.error('Error in GET /api/flashcards:', error)
     
     const errorMessage = error instanceof Error ? error.message : 'Internal server error'
-    const status = errorMessage.includes('Invalid input') ? 400 : 500
+    const status = errorMessage.includes('Invalid input') ? 400 : 
+                  errorMessage.includes('Unauthorized') ? 401 : 500
     
     return new Response(JSON.stringify({ error: errorMessage }), {
       status,
@@ -51,12 +64,22 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    // Parse request body
+    // Get authenticated user
+    const { data: { user }, error: authError } = await locals.supabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Parse and validate request body
     const body = await request.json()
+    const validatedBody = CreateFlashcardSchema.parse(body)
 
     // Initialize service and create flashcard
     const flashcardsService = new FlashcardsService(locals.supabase)
-    const result = await flashcardsService.createFlashcard(MOCK_USER_ID, body)
+    const result = await flashcardsService.createFlashcard(user.id, validatedBody)
 
     return new Response(JSON.stringify(result), {
       status: 201,
@@ -66,7 +89,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     console.error('Error in POST /api/flashcards:', error)
     
     const errorMessage = error instanceof Error ? error.message : 'Internal server error'
-    const status = errorMessage.includes('Invalid input') ? 400 : 500
+    const status = errorMessage.includes('Invalid input') ? 400 : 
+                  errorMessage.includes('Unauthorized') ? 401 : 500
     
     return new Response(JSON.stringify({ error: errorMessage }), {
       status,
