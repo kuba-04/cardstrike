@@ -2,6 +2,7 @@
 import "../styles/global.css";
 
 import { Toaster } from "sonner";
+import { Navbar } from "@/components/Navbar";
 
 interface Props {
   title: string;
@@ -21,7 +22,10 @@ const { title } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
-    <slot />
+    <Navbar client:load />
+    <main>
+      <slot />
+    </main>
     <Toaster richColors closeButton client:load />
   </body>
 </html>
@@ -47,5 +51,9 @@ const { title } = Astro.props;
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+  }
+
+  main {
+    padding: 1rem;
   }
 </style>
