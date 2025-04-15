@@ -6,7 +6,8 @@ import type { Database } from './db/database.types';
 declare global {
   namespace App {
     interface Locals {
-      supabase: SupabaseClient<Database>;
+      supabase: SupabaseClient<Database, 'public'>;
+      user?: User;
     }
   }
 }
@@ -24,4 +25,9 @@ interface ImportMetaEnv {
 
 interface ImportMeta {
   readonly env: ImportMetaEnv;
+}
+
+interface User {
+  id: string;
+  email: string | null;
 }

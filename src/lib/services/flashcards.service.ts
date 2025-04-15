@@ -15,6 +15,7 @@ import type {
   CompleteGenerationResponseDTO
 } from '../../types';
 import { OpenRouterFlashcardService } from './openrouter-flashcard.service';
+import { UserService } from './user.service';
 
 // Validation schemas
 export const generateFlashcardSchema = z.object({
@@ -45,23 +46,28 @@ export const updateFlashcardSchema = z.object({
   back_text: z.string().min(1, 'Back text cannot be empty').max(1000, 'Back text too long')
 });
 
-// Hardcoded user ID for development
-export const MOCK_USER_ID = '123e4567-e89b-12d3-a456-426614174000';
-
 // Default AI model configuration
 const DEFAULT_MODEL = 'openai/gpt-4o-mini';
 
 export class FlashcardsService {
   private aiService: OpenRouterFlashcardService;
+  private userService: UserService;
 
   constructor(private readonly supabase: SupabaseClient) {
     this.aiService = new OpenRouterFlashcardService();
+    this.userService = new UserService();
   }
 
-  async generateFlashcards(command: GenerateFlashcardCommand): Promise<GenerateFlashcardResponseDTO> {
+  async generateFlashcards(userId: string, command: GenerateFlashcardCommand): Promise<GenerateFlashcardResponseDTO> {
     try {
       // Validate input
       generateFlashcardSchema.parse(command);
+
+      // Ensure user exists
+      const user = await this.userService.getUser(userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
 
       // Create generation record in database
       const { data: generation, error } = await this.supabase
@@ -69,7 +75,7 @@ export class FlashcardsService {
         .insert({
           source_text: command.source_text,
           status: 'pending',
-          user_id: MOCK_USER_ID,
+          user_id: userId,
           model: DEFAULT_MODEL,
           generated_count: 0,  // Will be updated after generation
           accepted_unedited_count: 0,
@@ -111,7 +117,7 @@ export class FlashcardsService {
               front_content: candidate.front_text,
               back_content: candidate.back_text,
               status: candidate.status,
-              user_id: MOCK_USER_ID
+              user_id: userId
             }))
           );
 
@@ -144,6 +150,7 @@ export class FlashcardsService {
   }
 
   async updateCandidate(
+    userId: string,
     candidateId: string, 
     command: UpdateFlashcardCandidateCommand
   ): Promise<UpdateFlashcardCandidateResponseDTO> {
@@ -156,7 +163,7 @@ export class FlashcardsService {
         .from('flashcard_candidates')
         .select('id, generation_id')
         .eq('id', candidateId)
-        .eq('user_id', MOCK_USER_ID)
+        .eq('user_id', userId)
         .single();
 
       if (fetchError || !candidate) {
@@ -173,7 +180,7 @@ export class FlashcardsService {
           updated_at: new Date().toISOString()
         })
         .eq('id', candidateId)
-        .eq('user_id', MOCK_USER_ID);
+        .eq('user_id', userId);
 
       if (updateError) {
         throw new Error(`Failed to update flashcard candidate: ${updateError.message}`);
@@ -196,6 +203,7 @@ export class FlashcardsService {
   }
 
   async rejectCandidate(
+    userId: string,
     candidateId: string
   ): Promise<void> {
     try {
@@ -204,7 +212,7 @@ export class FlashcardsService {
         .from('flashcard_candidates')
         .select('id, generation_id')
         .eq('id', candidateId)
-        .eq('user_id', MOCK_USER_ID)
+        .eq('user_id', userId)
         .single();
 
       if (fetchError || !candidate) {
@@ -219,7 +227,7 @@ export class FlashcardsService {
           updated_at: new Date().toISOString()
         })
         .eq('id', candidateId)
-        .eq('user_id', MOCK_USER_ID);
+        .eq('user_id', userId);
 
       if (updateError) {
         throw new Error(`Failed to update flashcard candidate: ${updateError.message}`);

@@ -9,12 +9,26 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Get supabase client from context
     const supabase = locals.supabase;
 
+    // Check if user is authenticated
+    let userId: string = '';
+    if (!locals.user?.id) {
+      console.error('User unauthenticated');
+      userId = crypto.randomUUID();
+      // return new Response(JSON.stringify({ error: 'Authentication required' }), {
+      //   status: 401,
+      //   headers: { 'Content-Type': 'application/json' }
+      // });
+    } else {
+      console.error('User authenticated');
+      userId = locals.user.id;
+    }
+
     // Parse request body
     const body = await request.json() as GenerateFlashcardCommand;
     
     // Initialize service and generate flashcards
     const flashcardsService = new FlashcardsService(supabase);
-    const result = await flashcardsService.generateFlashcards(body);
+    const result = await flashcardsService.generateFlashcards(userId, body);
 
     return new Response(JSON.stringify(result), {
       status: 200,
