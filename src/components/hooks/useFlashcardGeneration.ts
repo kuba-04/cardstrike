@@ -37,16 +37,18 @@ export type UseFlashcardGenerationReturn = {
 
 async function handleApiResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    
     if (response.status === 401) {
       throw new Error('Please sign in to continue');
     }
-    if (response.status === 429) {
-      throw new Error('Too many requests. Please try again later');
+    
+    // Use the error message from the API if available
+    if (errorData?.error) {
+      throw new Error(errorData.error);
     }
-    const errorData = await response.json().catch(() => null);
-    throw new Error(
-      errorData?.message || `Request failed with status ${response.status}`
-    );
+
+    throw new Error(`Request failed with status ${response.status}`);
   }
   return response.json();
 }
@@ -83,7 +85,7 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
       })));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
-      throw err; // Re-throw for toast handling
+      throw err;
     } finally {
       setIsLoadingGeneration(false);
     }

@@ -24,15 +24,6 @@ export function FlashcardGenerationView() {
         cancelEditing
     } = useFlashcardGeneration();
 
-    // Handle error notifications
-    useEffect(() => {
-        if (error) {
-            toast.error('Error', {
-                description: error
-            });
-        }
-    }, [error]);
-
     const handleGenerateClick = async () => {
         if (sourceText.length < 100 || sourceText.length > 10000) {
             toast.error('Invalid Input', {
@@ -41,13 +32,24 @@ export function FlashcardGenerationView() {
             return;
         }
 
-        const promise = generateFlashcards();
-        toast.promise(promise, {
-            loading: 'Generating flashcards...',
-            success: 'Flashcards generated successfully!',
-            error: 'Failed to generate flashcards'
-        });
+        try {
+            await generateFlashcards();
+            toast.success('Success', {
+                description: 'Flashcards generated successfully!'
+            });
+        } catch (error) {
+            // Don't show a toast here as the error state will trigger the useEffect error handler
+        }
     };
+
+    // Handle error notifications
+    useEffect(() => {
+        if (error) {
+            toast.error('Error', {
+                description: error // Use the error message directly from the API
+            });
+        }
+    }, [error]);
 
     const handleCompleteReview = async () => {
         const acceptedCount = candidates.filter(c =>

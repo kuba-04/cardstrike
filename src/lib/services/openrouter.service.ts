@@ -22,6 +22,18 @@ export class OpenRouterValidationError extends OpenRouterError {
   }
 }
 
+export class OpenRouterProviderError extends OpenRouterError {
+  constructor(
+    message: string, 
+    public readonly providerName: string,
+    public readonly code: number,
+    public readonly rawError?: unknown
+  ) {
+    super(message);
+    this.name = 'OpenRouterProviderError';
+  }
+}
+
 // Response schema validation
 export const OpenRouterResponseSchema = z.object({
   choices: z.array(z.object({
@@ -81,7 +93,7 @@ export class OpenRouterService {
   constructor() {
     // Initialize with environment variables
     this._defaultSystemMessage = import.meta.env.OPENROUTER_DEFAULT_SYSTEM_MESSAGE || 'You are a helpful assistant.';
-    this._modelName = import.meta.env.OPENROUTER_MODEL_NAME || 'google/gemini-2.5-pro-exp-03-25:free';
+    this._modelName = import.meta.env.OPENROUTER_MODEL_NAME || 'qwen/qwq-32b:free';
     this._apiUrl = import.meta.env.OPENROUTER_API_URL;
 
     // Default model parameters
@@ -148,6 +160,19 @@ export class OpenRouterService {
         body: JSON.stringify(payload)
       });
 
+      const responseData = await response.json();
+
+      // Check for provider errors first
+      if (responseData.error?.metadata?.provider_name) {
+        const { error } = responseData;
+        throw new OpenRouterProviderError(
+          `${error.metadata.provider_name} API error: ${error.message}`,
+          error.metadata.provider_name,
+          error.code,
+          error.metadata.raw
+        );
+      }
+
       if (!response.ok) {
         // Handle rate limiting
         if (response.status === 429 && retryCount < this._maxRetries) {
@@ -157,22 +182,14 @@ export class OpenRouterService {
           return this._executeRequest(payload, retryCount + 1);
         }
 
-        // Log the error response
-        const errorText = await response.text();
-        this._logger.error('OpenRouter API Error:', {
-          status: response.status,
-          statusText: response.statusText,
-          body: errorText
-        });
-
         throw new OpenRouterNetworkError(
           `HTTP error ${response.status}: ${response.statusText}`,
           response.status,
-          errorText
+          responseData
         );
       }
 
-      return response.json();
+      return responseData;
     } catch (error) {
       if (error instanceof OpenRouterError) {
         throw error;

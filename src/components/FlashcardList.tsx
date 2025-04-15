@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from "sonner";
 import type { GetFlashcardsResponseDTO } from '../types';
 import FlashcardCard from './FlashcardCard';
-import Providers from './providers/Providers';
+import { Providers } from './providers/Providers';
 
 const ITEMS_PER_PAGE = 10;
 

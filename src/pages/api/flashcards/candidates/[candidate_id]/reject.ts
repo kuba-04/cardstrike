@@ -25,9 +25,9 @@ export const PUT: APIRoute = async ({ params, locals }) => {
 
     // Initialize service and reject candidate
     const flashcardsService = new FlashcardsService(locals.supabase);
-    const result = await flashcardsService.rejectCandidate(user.id, candidate_id);
+    await flashcardsService.rejectCandidate(user.id, candidate_id);
 
-    return new Response(JSON.stringify(result), {
+    return new Response(JSON.stringify({ message: 'Candidate rejected successfully' }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });

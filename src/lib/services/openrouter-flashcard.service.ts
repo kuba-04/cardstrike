@@ -1,4 +1,4 @@
-import { OpenRouterService } from './openrouter.service';
+import { OpenRouterService, OpenRouterError, OpenRouterProviderError } from './openrouter.service';
 import type { FlashcardCandidateDTO } from '../../types';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -68,6 +68,18 @@ You must respond in the following JSON format:
 
       return { candidates };
     } catch (error) {
+      if (error instanceof OpenRouterProviderError) {
+        // Handle provider-specific errors with user-friendly messages
+        if (error.code === 429) {
+          throw new Error(`The AI service (${error.providerName}) is currently at capacity. Please try again in a few minutes.`);
+        }
+        throw new Error(`The AI service (${error.providerName}) encountered an error. Please try again later.`);
+      }
+      
+      if (error instanceof OpenRouterError) {
+        throw new Error('Failed to generate flashcards due to a service error. Please try again later.');
+      }
+
       throw new Error(`Failed to generate flashcards: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
