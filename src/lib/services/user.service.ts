@@ -1,12 +1,14 @@
-import { supabaseClient } from '@/db/supabase.client';
 import type { User } from '@supabase/supabase-js';
 import type { Database } from '@/db/database.types';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 type CustomUser = Database['public']['Tables']['users']['Row'];
 
 export class UserService {
+  constructor(private readonly supabase: SupabaseClient) {}
+
   async ensureUserExists(authUser: User): Promise<CustomUser> {
-    const { data: existingUser, error: fetchError } = await supabaseClient
+    const { data: existingUser, error: fetchError } = await this.supabase
       .from('users')
       .select('*')
       .eq('id', authUser.id)
@@ -21,7 +23,7 @@ export class UserService {
     }
 
     // Create new user record if it doesn't exist
-    const { data: newUser, error: insertError } = await supabaseClient
+    const { data: newUser, error: insertError } = await this.supabase
       .from('users')
       .insert({
         id: authUser.id,
@@ -43,7 +45,7 @@ export class UserService {
   }
 
   async getUser(userId: string): Promise<CustomUser | null> {
-    const { data: user, error } = await supabaseClient
+    const { data: user, error } = await this.supabase
       .from('users')
       .select('*')
       .eq('id', userId)
@@ -60,7 +62,7 @@ export class UserService {
   }
 
   async updateUser(userId: string, updates: Partial<Omit<CustomUser, 'id' | 'created_at'>>): Promise<CustomUser> {
-    const { data: updatedUser, error } = await supabaseClient
+    const { data: updatedUser, error } = await this.supabase
       .from('users')
       .update({
         ...updates,

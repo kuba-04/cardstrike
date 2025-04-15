@@ -55,18 +55,29 @@ export class FlashcardsService {
 
   constructor(private readonly supabase: SupabaseClient) {
     this.aiService = new OpenRouterFlashcardService();
-    this.userService = new UserService();
+    this.userService = new UserService(supabase);
   }
 
-  async generateFlashcards(userId: string, command: GenerateFlashcardCommand): Promise<GenerateFlashcardResponseDTO> {
+  async generateFlashcards(command: GenerateFlashcardCommand): Promise<GenerateFlashcardResponseDTO> {
     try {
       // Validate input
       generateFlashcardSchema.parse(command);
 
-      // Ensure user exists
-      const user = await this.userService.getUser(userId);
-      if (!user) {
-        throw new Error('User not found');
+      // Get authenticated user
+      const { data: { user }, error: authError } = await this.supabase.auth.getUser();
+      if (authError) {
+        throw new Error('Authentication error');
+      }
+
+      // For demo/unauthenticated users, generate a temporary ID
+      const userId = user?.id || crypto.randomUUID();
+
+      // Ensure user exists in database if authenticated
+      if (user) {
+        const dbUser = await this.userService.getUser(userId);
+        if (!dbUser) {
+          throw new Error('User not found');
+        }
       }
 
       // Create generation record in database
