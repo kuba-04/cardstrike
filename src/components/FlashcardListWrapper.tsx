@@ -1,9 +1,9 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { PropsWithChildren } from 'react';
-import { AuthProvider } from "./AuthProvider"
-import { Toaster } from 'sonner';
 import type { User } from '@supabase/supabase-js';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'sonner';
+import FlashcardList from './FlashcardList';
 
+// Create a client
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
@@ -14,16 +14,14 @@ const queryClient = new QueryClient({
     },
 });
 
-interface ProvidersProps extends PropsWithChildren {
+interface FlashcardListWrapperProps {
     initialUser: Pick<User, 'id' | 'email'>;
 }
 
-export function Providers({ children, initialUser }: ProvidersProps) {
+export default function FlashcardListWrapper({ initialUser }: FlashcardListWrapperProps) {
     return (
         <QueryClientProvider client={queryClient}>
-            <AuthProvider initialUser={initialUser}>
-                {children}
-            </AuthProvider>
+            <FlashcardList initialUser={initialUser} />
             <Toaster richColors position="top-right" />
         </QueryClientProvider>
     );

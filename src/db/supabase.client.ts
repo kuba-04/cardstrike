@@ -9,6 +9,29 @@ export const cookieOptions: CookieOptions = {
   sameSite: 'lax',
 }
 
+// Helper function to check if we're in the browser
+const isBrowser = () => {
+  return typeof window !== 'undefined' && typeof document !== 'undefined'
+}
+
+export function getSupabaseClient(context?: {
+  headers: Headers
+  cookies: {
+    get: (name: string) => string | undefined
+    set: (name: string, value: string, options: CookieOptions) => void
+  }
+}): Client<Database> {
+  if (isBrowser()) {
+    return createSupabaseBrowserClient()
+  }
+  
+  if (!context) {
+    throw new Error('Context is required for server-side Supabase client')
+  }
+  
+  return createSupabaseServerClient(context)
+}
+
 export function createSupabaseBrowserClient() {
   // TODO: refactor to use cookies from the server
   return createBrowserClient<Database>(

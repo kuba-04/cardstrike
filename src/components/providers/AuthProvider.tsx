@@ -11,9 +11,23 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null)
-    const [loading, setLoading] = useState(true)
+interface AuthProviderProps {
+    children: React.ReactNode;
+    initialUser: Pick<User, 'id' | 'email'>;
+}
+
+export function AuthProvider({ children, initialUser }: AuthProviderProps) {
+    // Initialize with server-provided user data
+    const [user, setUser] = useState<User | null>({
+        ...initialUser,
+        app_metadata: {},
+        user_metadata: {},
+        aud: 'authenticated',
+        created_at: '',
+        role: '',
+        updated_at: '',
+    });
+    const [loading, setLoading] = useState(false);
     const supabase = createSupabaseBrowserClient()
 
     useEffect(() => {

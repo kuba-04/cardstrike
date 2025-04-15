@@ -3,7 +3,7 @@ import { LoginForm } from "./LoginForm"
 
 export function LoginFormWrapper() {
     return (
-        <Providers>
+        <Providers initialUser={{ id: '', email: '' }}>
             <LoginForm />
         </Providers>
     )

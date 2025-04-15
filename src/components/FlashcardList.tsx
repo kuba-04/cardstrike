@@ -4,27 +4,33 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from "sonner";
 import type { GetFlashcardsResponseDTO } from '../types';
 import FlashcardCard from './FlashcardCard';
-import { Providers } from './providers/Providers';
+import type { User } from '@supabase/supabase-js';
 
 const ITEMS_PER_PAGE = 10;
 
-function FlashcardListContent() {
+interface FlashcardListProps {
+    initialUser: Pick<User, 'id' | 'email'>;
+}
+
+export default function FlashcardList({ initialUser }: FlashcardListProps) {
     const [currentPage, setCurrentPage] = useState(1);
 
-    const { data, isLoading, isError } = useQuery<GetFlashcardsResponseDTO>({
+    const { data, isLoading, isError, error } = useQuery<GetFlashcardsResponseDTO>({
         queryKey: ['flashcards', currentPage],
         queryFn: async () => {
             const response = await fetch(`/api/flashcards?page=${currentPage}&limit=${ITEMS_PER_PAGE}`);
             if (!response.ok) {
-                throw new Error('Failed to fetch flashcards');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to fetch flashcards');
             }
             return response.json();
-        }
+        },
     });
 
     if (isError) {
+        console.error('Error fetching flashcards:', error);
         toast.error("Error", {
-            description: "Failed to load flashcards. Please try again later."
+            description: error instanceof Error ? error.message : "Failed to load flashcards. Please try again later."
         });
         return (
             <div className="text-center py-8 text-red-500">
@@ -92,13 +98,5 @@ function FlashcardListContent() {
                 </div>
             )}
         </div>
-    );
-}
-
-export default function FlashcardList() {
-    return (
-        <Providers>
-            <FlashcardListContent />
-        </Providers>
     );
 } 
