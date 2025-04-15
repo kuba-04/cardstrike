@@ -52,6 +52,10 @@ You must respond in the following JSON format:
     });
   }
 
+  public get modelName(): string {
+    return this.openRouter.modelName;
+  }
+
   async generateFlashcards(sourceText: string): Promise<FlashcardGenerationResponse> {
     try {
       const response = await this.openRouter.sendRequest(sourceText);

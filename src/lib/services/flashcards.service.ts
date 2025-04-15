@@ -46,9 +46,6 @@ export const updateFlashcardSchema = z.object({
   back_text: z.string().min(1, 'Back text cannot be empty').max(1000, 'Back text too long')
 });
 
-// Default AI model configuration
-const DEFAULT_MODEL = 'openai/gpt-4o-mini';
-
 export class FlashcardsService {
   private aiService: OpenRouterFlashcardService;
   private userService: UserService;
@@ -80,6 +77,8 @@ export class FlashcardsService {
         }
       }
 
+      const modelName = this.aiService.modelName;
+
       // Create generation record in database
       const { data: generation, error } = await this.supabase
         .from('generations')
@@ -87,7 +86,7 @@ export class FlashcardsService {
           source_text: command.source_text,
           status: 'pending',
           user_id: userId,
-          model: DEFAULT_MODEL,
+          model: modelName,
           generated_count: 0,  // Will be updated after generation
           accepted_unedited_count: 0,
           accepted_edited_count: 0,
@@ -105,7 +104,6 @@ export class FlashcardsService {
         
         // Generate flashcard candidates using OpenRouter service
         const { candidates } = await this.aiService.generateFlashcards(command.source_text);
-        
         const generationDuration = Date.now() - startTime;
 
         // Update generation record with results

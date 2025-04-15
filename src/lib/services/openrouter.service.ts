@@ -116,6 +116,10 @@ export class OpenRouterService {
     this._logger = console;
   }
 
+  public get modelName(): string {
+    return this._modelName;
+  }
+
   public async sendRequest(userMessage: string): Promise<OpenRouterResponse> {
     try {
       const payload = this._buildPayload(userMessage);
