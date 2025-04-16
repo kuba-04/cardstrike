@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { createSupabaseServerClient } from '../../../db/supabase.client';
+import { UserService } from '../../../lib/services/user.service';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -23,6 +24,16 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         status: 400,
       });
     }
+
+    if (!data.user) {
+      return new Response(JSON.stringify({ error: 'Failed to authenticate user' }), {
+        status: 400,
+      });
+    }
+
+    // Ensure user record exists in our database
+    const userService = new UserService(supabase);
+    await userService.ensureUserExists(data.user);
 
     return new Response(JSON.stringify({ user: data.user }), {
       status: 200,
