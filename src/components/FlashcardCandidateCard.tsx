@@ -26,7 +26,7 @@ export function FlashcardCandidateCard({
     const isEdited = candidate.local_status === 'edited-saved';
 
     return (
-        <Card className={isRejected ? 'opacity-50' : ''}>
+        <Card className={isRejected ? 'opacity-50' : ''} data-testid="flashcard-candidate">
             {isEditing ? (
                 <EditCandidateForm
                     candidate={candidate}
@@ -50,6 +50,7 @@ export function FlashcardCandidateCard({
                                         size="icon"
                                         onClick={onStartEditing}
                                         disabled={candidate.is_saving_edit}
+                                        aria-label="Edit flashcard"
                                     >
                                         <Pencil className="h-4 w-4" />
                                     </Button>
@@ -58,6 +59,7 @@ export function FlashcardCandidateCard({
                                         size="icon"
                                         onClick={onReject}
                                         disabled={candidate.is_rejecting}
+                                        aria-label="Reject flashcard"
                                     >
                                         {candidate.is_rejecting ? (
                                             <Loader2 className="h-4 w-4 animate-spin" />

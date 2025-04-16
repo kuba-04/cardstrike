@@ -46,6 +46,7 @@ export function EditCandidateForm({
                         onChange={(e) => setFrontText(e.target.value)}
                         placeholder="Front side of the flashcard"
                         required
+                        disabled={isSaving}
                     />
                 </div>
                 <div className="space-y-2">
@@ -56,6 +57,7 @@ export function EditCandidateForm({
                         onChange={(e) => setBackText(e.target.value)}
                         placeholder="Back side of the flashcard"
                         required
+                        disabled={isSaving}
                     />
                 </div>
             </CardContent>
