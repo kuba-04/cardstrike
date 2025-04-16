@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from "sonner";
 import type { GetFlashcardsResponseDTO } from '../types';
@@ -14,6 +14,7 @@ interface FlashcardListProps {
 
 export default function FlashcardList({ initialUser }: FlashcardListProps) {
     const [currentPage, setCurrentPage] = useState(1);
+    const queryClient = useQueryClient();
 
     const { data, isLoading, isError, error } = useQuery<GetFlashcardsResponseDTO>({
         queryKey: ['flashcards', currentPage],
@@ -70,7 +71,8 @@ export default function FlashcardList({ initialUser }: FlashcardListProps) {
                         key={flashcard.id}
                         flashcard={flashcard}
                         onDelete={() => {
-                            // Will implement delete functionality in FlashcardCard
+                            // Invalidate and refetch flashcards
+                            queryClient.invalidateQueries({ queryKey: ['flashcards'] });
                         }}
                     />
                 ))}

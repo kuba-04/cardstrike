@@ -70,6 +70,8 @@ export function FlashcardGenerationView() {
             success: 'Flashcards have been saved successfully!',
             error: 'Failed to save flashcards'
         });
+
+        window.location.href = '/flashcards';
     };
 
     return (

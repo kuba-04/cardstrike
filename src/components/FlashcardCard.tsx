@@ -14,9 +14,9 @@ export default function FlashcardCard({ flashcard, onDelete }: FlashcardCardProp
     const [isFlipped, setIsFlipped] = useState(false);
 
     const handleDelete = async () => {
-        if (!confirm('Are you sure you want to delete this flashcard?')) {
-            return;
-        }
+        // if (!confirm('Are you sure you want to delete this flashcard?')) {
+        //     return;
+        // }
 
         setIsDeleting(true);
         try {
@@ -27,10 +27,7 @@ export default function FlashcardCard({ flashcard, onDelete }: FlashcardCardProp
             if (!response.ok) {
                 throw new Error('Failed to delete flashcard');
             }
-
-            toast.success("Success!", {
-                description: "Flashcard deleted successfully"
-            });
+            // toast.success("Flashcard deleted successfully");
             onDelete();
         } catch (error) {
             toast.error("Error", {

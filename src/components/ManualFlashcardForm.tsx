@@ -82,8 +82,8 @@ export default function ManualFlashcardForm() {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <Card>
+        <form onSubmit={handleSubmit} className="flex justify-center">
+            <Card className="max-w-md w-full">
                 <CardHeader>
                     <CardTitle>Create a New Flashcard</CardTitle>
                 </CardHeader>

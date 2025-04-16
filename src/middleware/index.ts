@@ -7,10 +7,12 @@ const PUBLIC_PATHS = [
   "/auth/login",
   "/auth/register",
   "/auth/reset-password",
+  "/auth/forgot-password" ,
   // Auth API endpoints
   "/api/auth/login",
   "/api/auth/register",
   "/api/auth/reset-password",
+  "/api/auth/forgot-password",
 ];
 
 export const onRequest = defineMiddleware(
