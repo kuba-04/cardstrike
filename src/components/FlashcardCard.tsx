@@ -41,65 +41,53 @@ export default function FlashcardCard({ flashcard, onDelete }: FlashcardCardProp
         }
     };
 
+    const CardSide = ({ isAnswer = false }: { isAnswer?: boolean }) => (
+        <Card className="grid grid-flow-col grid-rows-5 h-full">
+            <CardHeader className="row-span-1 border-b">
+                <div className="text-xs text-gray-500">{isAnswer ? 'Back' : 'Front'}</div>
+            </CardHeader>
+            <CardContent className="row-span-3">
+                <div className="flex items-center justify-center h-full">
+                    <p className="text-lg">{isAnswer ? flashcard.back_text : flashcard.front_text}</p>
+                </div>
+            </CardContent>
+            <CardFooter className="row-span-1 border-t justify-between py-2">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete();
+                    }}
+                    disabled={isDeleting}
+                >
+                    {isDeleting ? 'Deleting...' : 'Delete'}
+                </Button>
+                {flashcard.is_ai && (
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        AI Generated
+                    </span>
+                )}
+            </CardFooter>
+        </Card>
+    );
+
     return (
-        <Card
-            className={`cursor-pointer transition-all duration-500 transform perspective-1000 ${isFlipped ? '[transform:rotateY(180deg)]' : ''
-                }`}
+        <div
+            className="cursor-pointer [perspective:1000px] relative w-full h-[250px]"
             onClick={() => setIsFlipped(!isFlipped)}
         >
-            <div className={`relative ${isFlipped ? 'hidden' : 'block'}`}>
-                <CardHeader className="pb-3">
-                    <div className="text-sm text-gray-500">Question</div>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-lg">{flashcard.front_text}</p>
-                </CardContent>
-                <CardFooter className="flex justify-between border-t pt-3">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete();
-                        }}
-                        disabled={isDeleting}
-                    >
-                        {isDeleting ? 'Deleting...' : 'Delete'}
-                    </Button>
-                    {flashcard.is_ai && (
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                            AI Generated
-                        </span>
-                    )}
-                </CardFooter>
+            <div
+                className={`absolute inset-0 w-full h-full transition-transform duration-500 [transform-style:preserve-3d] ${isFlipped ? '[transform:rotateY(180deg)]' : ''
+                    }`}
+            >
+                <div className="absolute inset-0 w-full h-full [backface-visibility:hidden]">
+                    <CardSide />
+                </div>
+                <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)]">
+                    <CardSide isAnswer />
+                </div>
             </div>
-
-            <div className={`absolute inset-0 [transform:rotateY(180deg)] ${isFlipped ? 'block' : 'hidden'}`}>
-                <CardHeader className="pb-3">
-                    <div className="text-sm text-gray-500">Answer</div>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-lg">{flashcard.back_text}</p>
-                </CardContent>
-                <CardFooter className="flex justify-between border-t pt-3">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete();
-                        }}
-                        disabled={isDeleting}
-                    >
-                        {isDeleting ? 'Deleting...' : 'Delete'}
-                    </Button>
-                    {flashcard.is_ai && (
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                            AI Generated
-                        </span>
-                    )}
-                </CardFooter>
-            </div>
-        </Card>
+        </div>
     );
 } 
