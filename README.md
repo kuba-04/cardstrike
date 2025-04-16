@@ -42,6 +42,12 @@ CardStrike Flashcards is designed to streamline the process of creating and mana
 - Supabase (PostgreSQL, authentication, and storage)
 - Openrouter.ai (AI models integration for flashcard generation)
 
+**Testing:**
+
+- Vitest with React Testing Library (unit/integration testing)
+- Playwright (end-to-end testing)
+- MSW (API mocking)
+
 **CI/CD & Hosting:**
 
 - GitHub Actions (CI/CD pipelines)
@@ -67,7 +73,9 @@ CardStrike Flashcards is designed to streamline the process of creating and mana
 - `npm run dev` - Starts the development server.
 - `npm run build` - Builds the project for production.
 - `npm run preview` - Previews the production build locally.
-- `npm run test` - Runs the test suite (if available).
+- `npm run test` - Runs unit and integration tests with Vitest.
+- `npm run test:e2e` - Runs end-to-end tests with Playwright.
+- `npm run test:coverage` - Runs tests with coverage reporting.
 
 ## Project Scope
 

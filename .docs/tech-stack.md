@@ -18,3 +18,10 @@
 ##### CI/CD and Hosting:
 - Github Actions for creating CI/CD pipelines
 - DigitalOcean for hosting applications via a docker image
+
+##### Testing:
+- Vitest with React Testing Library for unit and integration testing of React components
+- Playwright for end-to-end testing and visual regression testing
+- MSW (Mock Service Worker) for API mocking in tests
+- @testing-library/user-event for simulating user interactions
+- @testing-library/jest-dom for enhanced assertions
