@@ -3,6 +3,14 @@ import { createSupabaseServerClient } from '../db/supabase.client';
 
 // Public paths - Auth API endpoints & Server-Rendered Astro Pages
 const PUBLIC_PATHS = [
+  "/",
+  "/flashcards",
+  "/flashcards/generate",
+  "/flashcards/review",
+  "/flashcards/review/complete",
+  "/flashcards/review/reject",
+  "/flashcards/review/update",
+  "/api/flashcards/generate",
   // Server-Rendered Astro Pages
   "/auth/login",
   "/auth/register",
