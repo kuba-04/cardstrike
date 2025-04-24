@@ -1,14 +1,28 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import { FlashcardGenerationView } from '@/components/FlashcardGenerationView';
+import { FlashcardGenerationViewWrapper } from '@/components/FlashcardGenerationViewWrapper';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+
+// Get the user session on the server side
+const { data: { user }, error } = await Astro.locals.supabase.auth.getUser();
+
+// Log error if any, but don't throw - this is a public page
+if (error) {
+  console.error('Error getting user session:', error);
+}
+
+// Extract only the necessary user data for the client
+const initialUser = {
+  id: user?.id ?? '',
+  email: user?.email ?? '',
+};
 ---
 
 <Layout title="Generate Flashcards - CardStrike">
   <main class="container mx-auto px-4 py-8">
     <h1 class="text-4xl font-bold mb-8">Generate Flashcards</h1>
     <ErrorBoundary client:load>
-      <FlashcardGenerationView client:load />
+      <FlashcardGenerationViewWrapper client:only="react" initialUser={initialUser} />
     </ErrorBoundary>
   </main>
 </Layout>

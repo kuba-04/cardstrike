@@ -9,6 +9,7 @@ interface CandidateReviewAreaProps {
     candidates: CandidateWithLocalStatus[];
     isLoadingCompletion: boolean;
     isEditingCandidateId: string | null;
+    isDemo?: boolean;
     onRejectCandidate: (candidateId: string) => Promise<void>;
     onUpdateCandidate: (candidateId: string, updateData: UpdateFlashcardCandidateCommand) => Promise<void>;
     onStartEditing: (candidateId: string) => void;
@@ -20,6 +21,7 @@ export function CandidateReviewArea({
     candidates,
     isLoadingCompletion,
     isEditingCandidateId,
+    isDemo = false,
     onRejectCandidate,
     onUpdateCandidate,
     onStartEditing,
@@ -48,8 +50,9 @@ export function CandidateReviewArea({
                 </div>
                 <Button
                     onClick={onCompleteReview}
-                    disabled={isLoadingCompletion || acceptedCount === 0 || isEditingCandidateId !== null}
+                    disabled={isLoadingCompletion || acceptedCount === 0 || isEditingCandidateId !== null || isDemo}
                     size="lg"
+                    title={isDemo ? "In demo mode, flashcards cannot be saved. Please log in to save flashcards." : undefined}
                 >
                     {isLoadingCompletion ? (
                         <>
@@ -57,7 +60,7 @@ export function CandidateReviewArea({
                             Saving...
                         </>
                     ) : (
-                        'Complete Review'
+                        isDemo ? "Demo Mode (Login to Save)" : "Complete Review"
                     )}
                 </Button>
             </div>

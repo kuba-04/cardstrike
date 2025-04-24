@@ -12,7 +12,8 @@ import type {
   UpdateFlashcardCommand,
   UpdateFlashcardResponseDTO,
   DeleteFlashcardResponseDTO,
-  CompleteGenerationResponseDTO
+  CompleteGenerationResponseDTO,
+  FlashcardCandidateDTO
 } from '../../types';
 import { OpenRouterFlashcardService } from './openrouter-flashcard.service';
 import { UserService } from './user.service';
@@ -48,9 +49,11 @@ export const updateFlashcardSchema = z.object({
 
 export class FlashcardsService {
   private aiService: OpenRouterFlashcardService;
+  private supabase: SupabaseClient<any, 'public', any>;
   private userService: UserService;
 
-  constructor(private readonly supabase: SupabaseClient) {
+  constructor(supabase: SupabaseClient<any, 'public', any>) {
+    this.supabase = supabase;
     this.aiService = new OpenRouterFlashcardService();
     this.userService = new UserService(supabase);
   }
@@ -601,6 +604,29 @@ export class FlashcardsService {
         saved_flashcards: savedFlashcards
       };
     } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Generates flashcards for demo users without storing anything in the database
+   * @param sourceText The source text to generate flashcards from
+   * @returns Generated flashcard candidates
+   */
+  async generateFlashcardsForDemo(sourceText: string): Promise<FlashcardCandidateDTO[]> {
+    try {
+      // Validate input
+      const validatedCommand = generateFlashcardSchema.parse({ source_text: sourceText });
+
+      // Generate flashcard candidates using OpenRouter service
+      const { candidates } = await this.aiService.generateFlashcards(validatedCommand.source_text);
+      
+      // Return candidates without storing anything
+      return candidates;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw new Error(`Invalid input: ${error.errors[0].message}`);
+      }
       throw error;
     }
   }

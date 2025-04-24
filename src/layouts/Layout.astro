@@ -7,6 +7,12 @@ interface Props {
 }
 
 const { title } = Astro.props;
+
+// Extract only the necessary user data for the client
+const initialUser = {
+  id: Astro.locals.user?.id ?? '',
+  email: Astro.locals.user?.email ?? '',
+};
 ---
 
 <!doctype html>
@@ -20,7 +26,7 @@ const { title } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
-    <AppShell client:only="react">
+    <AppShell client:only="react" initialUser={initialUser}>
       <slot />
     </AppShell>
   </body>

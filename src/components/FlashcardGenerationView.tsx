@@ -5,6 +5,9 @@ import { TextInputArea } from './TextInputArea';
 import { GenerateButton } from './GenerateButton';
 import { CandidateReviewArea } from './CandidateReviewArea';
 import { LoadingIndicator } from './ui/loading-indicator';
+import { useDemoSession } from './hooks/useDemoSession';
+import { Alert, AlertDescription } from './ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 export function FlashcardGenerationView() {
     const {
@@ -23,6 +26,8 @@ export function FlashcardGenerationView() {
         startEditing,
         cancelEditing
     } = useFlashcardGeneration();
+
+    const { isDemo } = useDemoSession();
 
     const handleGenerateClick = async () => {
         if (sourceText.length < 100 || sourceText.length > 10000) {
@@ -76,6 +81,16 @@ export function FlashcardGenerationView() {
 
     return (
         <div className="space-y-8">
+            {isDemo && (
+                <Alert className="bg-blue-50">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                        You are in demo mode. You can generate flashcards once to try the app.
+                        Please log in to save your flashcards and use all features.
+                    </AlertDescription>
+                </Alert>
+            )}
+
             <TextInputArea
                 value={sourceText}
                 onChange={setSourceText}
@@ -108,6 +123,7 @@ export function FlashcardGenerationView() {
                     candidates={candidates}
                     isLoadingCompletion={isLoadingCompletion}
                     isEditingCandidateId={isEditingCandidateId}
+                    isDemo={isDemo}
                     onRejectCandidate={rejectCandidate}
                     onUpdateCandidate={updateCandidate}
                     onStartEditing={startEditing}

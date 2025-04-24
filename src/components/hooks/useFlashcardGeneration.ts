@@ -5,7 +5,10 @@ import type {
   FlashcardCandidateDTO,
   UpdateFlashcardCandidateCommand,
   CompleteGenerationResponseDTO
-} from '@/types';
+} from '../../types';
+import { handleApiResponse } from '../../lib/api-utils';
+import { useDemoSession } from './useDemoSession';
+import { toast } from 'sonner';
 
 export type CandidateWithLocalStatus = {
   candidate_id: string;
@@ -35,24 +38,6 @@ export type UseFlashcardGenerationReturn = {
   cancelEditing: () => void;
 };
 
-async function handleApiResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => null);
-    
-    if (response.status === 401) {
-      throw new Error('Please sign in to continue');
-    }
-    
-    // Use the error message from the API if available
-    if (errorData?.error) {
-      throw new Error(errorData.error);
-    }
-
-    throw new Error(`Request failed with status ${response.status}`);
-  }
-  return response.json();
-}
-
 export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
   const [sourceText, setSourceText] = useState('');
   const [generationId, setGenerationId] = useState<string | null>(null);
@@ -61,9 +46,18 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
   const [isLoadingCompletion, setIsLoadingCompletion] = useState(false);
   const [isEditingCandidateId, setIsEditingCandidateId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { hasUsedGeneration, markGenerationUsed, isDemo } = useDemoSession();
 
   const generateFlashcards = async () => {
     try {
+      // Check if demo user has already generated
+      if (isDemo && hasUsedGeneration) {
+        toast.error('Demo Limit Reached', {
+          description: 'Please log in to generate more flashcards. Demo users are limited to one generation.'
+        });
+        return;
+      }
+
       setError(null);
       setIsLoadingGeneration(true);
       
@@ -74,8 +68,17 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
       });
 
       const data = await handleApiResponse<GenerateFlashcardResponseDTO>(response);
+      
+      // Mark demo generation as used if successful
+      if (isDemo) {
+        markGenerationUsed();
+        toast.info('Demo Mode', {
+          description: 'Your flashcards will not be saved. Please log in to save and manage your flashcards.'
+        });
+      }
+
       setGenerationId(data.generation_id);
-      setCandidates(data.candidates.map(candidate => ({
+      setCandidates(data.candidates.map((candidate: FlashcardCandidateDTO) => ({
         ...candidate,
         original_front_text: candidate.front_text,
         original_back_text: candidate.back_text,
@@ -98,6 +101,18 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
           ? { ...c, is_rejecting: true }
           : c
       ));
+
+      // For demo users, just update the local state without API calls
+      if (isDemo) {
+        setTimeout(() => {
+          setCandidates(prev => prev.map(c => 
+            c.candidate_id === candidateId 
+              ? { ...c, local_status: 'rejected', is_rejecting: false }
+              : c
+          ));
+        }, 300); // Add a small delay to simulate API call
+        return;
+      }
 
       const response = await fetch(`/api/flashcards/candidates/${candidateId}/reject`, {
         method: 'PUT'
@@ -128,6 +143,25 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
           ? { ...c, is_saving_edit: true }
           : c
       ));
+
+      // For demo users, just update the local state without API calls
+      if (isDemo) {
+        setTimeout(() => {
+          setCandidates(prev => prev.map(c => 
+            c.candidate_id === candidateId 
+              ? { 
+                  ...c, 
+                  front_text: updateData.front_text,
+                  back_text: updateData.back_text,
+                  local_status: 'edited-saved',
+                  is_saving_edit: false 
+                }
+              : c
+          ));
+          setIsEditingCandidateId(null);
+        }, 300); // Add a small delay to simulate API call
+        return;
+      }
 
       const response = await fetch(`/api/flashcards/candidates/${candidateId}`, {
         method: 'PUT',
@@ -165,6 +199,18 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
 
     try {
       setIsLoadingCompletion(true);
+
+      // For demo users, just clear the state without saving
+      if (isDemo) {
+        toast.success('Demo Complete', {
+          description: 'In demo mode, flashcards are not saved. Log in to save and manage your flashcards!'
+        });
+        setSourceText('');
+        setGenerationId(null);
+        setCandidates([]);
+        return;
+      }
+
       const response = await fetch(`/api/flashcards/generations/${generationId}/complete`, {
         method: 'PUT'
       });

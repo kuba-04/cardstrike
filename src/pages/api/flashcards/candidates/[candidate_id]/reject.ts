@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { FlashcardsService } from '@/lib/services/flashcards.service';
+import { FlashcardsService } from '../../../../../lib/services/flashcards.service';
 
 export const prerender = false;
 
@@ -16,14 +16,17 @@ export const PUT: APIRoute = async ({ params, locals }) => {
 
     // Get authenticated user
     const { data: { user }, error: authError } = await locals.supabase.auth.getUser();
+    
+    // Special handling for demo mode (unauthenticated users)
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
+      // For demo users, we don't store anything but return a success response
+      return new Response(JSON.stringify({ message: 'Demo candidate rejected successfully' }), {
+        status: 200,
         headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    // Initialize service and reject candidate
+    // For authenticated users, proceed with normal flow
     const flashcardsService = new FlashcardsService(locals.supabase);
     await flashcardsService.rejectCandidate(user.id, candidate_id);
 

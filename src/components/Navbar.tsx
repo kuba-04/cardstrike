@@ -11,6 +11,7 @@ export function Navbar() {
         try {
             await signOut();
             toast.success('Successfully logged out');
+            window.location.href = '/';
         } catch (error) {
             console.error('Error logging out:', error);
             toast.error(error instanceof Error ? error.message : 'Failed to logout');

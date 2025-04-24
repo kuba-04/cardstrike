@@ -1,4 +1,4 @@
-import { defineMiddleware } from 'astro:middleware';
+import type { MiddlewareHandler } from 'astro';
 import { createSupabaseServerClient } from '../db/supabase.client';
 
 // Public paths - Auth API endpoints & Server-Rendered Astro Pages
@@ -23,39 +23,38 @@ const PUBLIC_PATHS = [
   "/api/auth/forgot-password",
 ];
 
-export const onRequest = defineMiddleware(
-  async ({ locals, cookies, url, request, redirect }, next) => {
-    const supabase = createSupabaseServerClient({
-      headers: request.headers,
-      cookies: {
-        get: (name) => cookies.get(name)?.value,
-        set: (name, value, options) => cookies.set(name, value, options),
-      },
-    });
+export const onRequest: MiddlewareHandler = async (
+  { locals, cookies, url, request, redirect }, 
+  next
+) => {
+  const supabase = createSupabaseServerClient({
+    headers: request.headers,
+    cookies: {
+      get: (name: string) => cookies.get(name)?.value,
+      set: (name: string, value: string, options: any) => cookies.set(name, value, options),
+    },
+  });
 
-    // Store supabase client in locals
-    locals.supabase = supabase;
+  // Store supabase client in locals
+  locals.supabase = supabase;
 
-    // Skip auth check for public paths
-    if (PUBLIC_PATHS.includes(url.pathname)) {
-      return next();
-    }
+  // IMPORTANT: Always get user session first before any other operations
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    // IMPORTANT: Always get user session first before any other operations
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  // Always set user in locals if available
+  if (user) {
+    locals.user = {
+      email: user.email ?? null,
+      id: user.id,
+    };
+  }
 
-    if (user) {
-      locals.user = {
-        email: user.email ?? null,
-        id: user.id,
-      };
-    } else if (!PUBLIC_PATHS.includes(url.pathname)) {
-      // Redirect to login for protected routes
-      return redirect('/auth/login');
-    }
+  // Only check protected routes after setting up the user
+  if (!PUBLIC_PATHS.includes(url.pathname) && !user) {
+    return redirect('/auth/login');
+  }
 
-    return next();
-  },
-); 
+  return next();
+}; 
