@@ -11,6 +11,11 @@ jobs:
     env:
       PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
       PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      OPENROUTER_HTTP_REFERER: ${{ secrets.OPENROUTER_HTTP_REFERER }}
+      OPENROUTER_MODEL_NAME: "qwen/qwq-32b:free"
+      OPENROUTER_API_URL: "https://openrouter.ai/api/v1/chat/completions"
+      OPENROUTER_DEFAULT_SYSTEM_MESSAGE: "You are a helpful assistant that can answer questions and help with tasks."
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
