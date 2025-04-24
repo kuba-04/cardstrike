@@ -38,7 +38,7 @@ export function CandidateReviewArea({
     ).length;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6" data-testid="candidate-review-area">
             <div className="flex items-center justify-between">
                 <div className="space-y-1">
                     <h2 className="text-2xl font-semibold tracking-tight">
@@ -69,6 +69,7 @@ export function CandidateReviewArea({
                 {candidates.map((candidate) => (
                     <FlashcardCandidateCard
                         key={candidate.candidate_id}
+                        data-testid="flashcard-candidate"
                         candidate={candidate}
                         isEditing={candidate.candidate_id === isEditingCandidateId}
                         onReject={() => onRejectCandidate(candidate.candidate_id)}
