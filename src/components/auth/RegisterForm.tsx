@@ -15,7 +15,7 @@ export function RegisterForm() {
         onSubmit: async (data) => {
             await AuthService.register(data)
             toast.success('Registration successful! Please check your email to verify your account.')
-            window.location.href = '/auth/login'
+            window.location.href = '/'
         }
     })
 

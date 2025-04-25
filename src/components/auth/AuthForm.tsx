@@ -1,7 +1,7 @@
 import { type FieldValues, type UseFormReturn } from 'react-hook-form'
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form } from '@/components/ui/form'
+import { Form } from "@/components/ui/form"
 
 interface AuthFormProps<T extends FieldValues> {
     form: UseFormReturn<T>
