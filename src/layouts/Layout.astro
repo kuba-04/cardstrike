@@ -4,9 +4,10 @@ import { AppShell } from "@/components/AppShell";
 
 interface Props {
   title: string;
+  hideNav?: boolean;
 }
 
-const { title } = Astro.props;
+const { title, hideNav = false } = Astro.props;
 
 // Extract only the necessary user data for the client
 const initialUser = {
@@ -26,7 +27,7 @@ const initialUser = {
     <title>{title}</title>
   </head>
   <body>
-    <AppShell client:only="react" initialUser={initialUser}>
+    <AppShell client:only="react" initialUser={initialUser} hideNav={hideNav}>
       <slot />
     </AppShell>
   </body>

@@ -17,7 +17,7 @@ export function LoginForm() {
         onSubmit: async (data) => {
             await signIn(data.email, data.password)
             toast.success('Successfully signed in')
-            window.location.href = '/'
+            window.location.href = '/?panel=collections'
         }
     })
 

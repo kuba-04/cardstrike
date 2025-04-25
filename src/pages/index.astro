@@ -18,11 +18,8 @@ const initialUser = {
 };
 ---
 
-<Layout title="Generate Flashcards - CardStrike">
-  <main class="container mx-auto px-4 py-8">
-    <h1 class="text-4xl font-bold mb-8">Generate Flashcards</h1>
-    <ErrorBoundary client:load>
-      <FlashcardGenerationViewWrapper client:only="react" initialUser={initialUser} />
-    </ErrorBoundary>
-  </main>
+<Layout title="CardStrike" hideNav={true}>
+  <ErrorBoundary client:load>
+    <FlashcardGenerationViewWrapper client:only="react" initialUser={initialUser} />
+  </ErrorBoundary>
 </Layout>

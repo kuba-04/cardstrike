@@ -6,13 +6,14 @@ import type { User } from '@supabase/supabase-js'
 
 interface AppShellProps extends PropsWithChildren {
     initialUser: Pick<User, 'id' | 'email'>
+    hideNav?: boolean
 }
 
-export function AppShell({ children, initialUser }: AppShellProps) {
+export function AppShell({ children, initialUser, hideNav = false }: AppShellProps) {
     return (
         <Providers initialUser={initialUser}>
             <div className="flex min-h-screen flex-col">
-                <Navbar />
+                {!hideNav && <Navbar />}
                 <main className="flex-1">
                     {children}
                 </main>

@@ -82,9 +82,9 @@ export function FlashcardGenerationView() {
     return (
         <div className="space-y-8">
             {isDemo && (
-                <Alert className="bg-blue-50">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
+                <Alert className="bg-blue-50 border-blue-200">
+                    <AlertCircle className="h-4 w-4 text-blue-600" />
+                    <AlertDescription className="text-blue-800">
                         You are in demo mode. You can generate flashcards once to try the app.
                         Please log in to save your flashcards and use all features.
                     </AlertDescription>
