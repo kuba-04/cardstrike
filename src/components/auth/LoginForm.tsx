@@ -1,42 +1,33 @@
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { AuthForm } from "./AuthForm"
 import { AuthError } from "./AuthError"
 import { Link } from "@/components/ui/link"
 import { useAuth } from "../providers/AuthProvider"
 import { toast } from "sonner"
+import { useAuthForm } from "@/hooks/useAuthForm"
+import { loginSchema, type LoginFormData } from "@/lib/schemas/auth.schema"
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
 
 export function LoginForm() {
-    const [error, setError] = useState<string | null>(null)
-    const [isLoading, setIsLoading] = useState(false)
     const { signIn } = useAuth()
 
-    const handleSubmit = async (formData: FormData) => {
-        try {
-            setError(null)
-            setIsLoading(true)
-
-            const email = formData.get('email') as string
-            const password = formData.get('password') as string
-
-            await signIn(email, password)
+    const { form, error, isSubmitting, handleSubmit } = useAuthForm<LoginFormData>({
+        schema: loginSchema,
+        onSubmit: async (data) => {
+            await signIn(data.email, data.password)
             toast.success('Successfully signed in')
             window.location.href = '/'
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'An unexpected error occurred')
-            toast.error(err instanceof Error ? err.message : 'Failed to sign in')
-        } finally {
-            setIsLoading(false)
         }
-    }
+    })
 
     return (
         <AuthForm
+            form={form}
+            onSubmit={handleSubmit}
             title="Welcome back"
             description="Enter your email to sign in to your account"
-            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
             footer={
                 <div className="flex flex-col space-y-2 text-sm text-muted-foreground">
                     <Link href="/auth/register">Don't have an account? Sign up</Link>
@@ -46,31 +37,45 @@ export function LoginForm() {
         >
             <div className="grid gap-4">
                 <AuthError error={error} />
-                <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="name@example.com"
-                        required
-                        autoComplete="email"
-                        disabled={isLoading}
-                    />
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                        id="password"
-                        name="password"
-                        type="password"
-                        required
-                        autoComplete="current-password"
-                        disabled={isLoading}
-                    />
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Signing in...' : 'Sign in'}
+                <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                                <Input
+                                    type="email"
+                                    placeholder="name@example.com"
+                                    autoComplete="email"
+                                    disabled={isSubmitting}
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Password</FormLabel>
+                            <FormControl>
+                                <Input
+                                    type="password"
+                                    autoComplete="current-password"
+                                    disabled={isSubmitting}
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? 'Signing in...' : 'Sign in'}
                 </Button>
             </div>
         </AuthForm>
