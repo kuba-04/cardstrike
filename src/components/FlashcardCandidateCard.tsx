@@ -26,7 +26,7 @@ export function FlashcardCandidateCard({
     const isEdited = candidate.local_status === 'edited-saved';
 
     return (
-        <Card className={isRejected ? 'opacity-50' : ''} data-testid="flashcard-candidate">
+        <Card className={`min-h-[250px] h-full ${isRejected ? 'opacity-50' : ''}`} data-testid="flashcard-candidate">
             {isEditing ? (
                 <EditCandidateForm
                     candidate={candidate}
@@ -37,14 +37,14 @@ export function FlashcardCandidateCard({
                 <>
                     <CardHeader className="space-y-1">
                         <div className="flex items-start justify-between">
-                            <div className="space-y-1">
+                            <div className="flex-1 space-y-1">
                                 <h3 className="text-lg font-medium">Front</h3>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-sm text-muted-foreground line-clamp-4 overflow-auto max-h-24">
                                     {candidate.front_text}
                                 </p>
                             </div>
                             {!isRejected && (
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 ml-4 flex-shrink-0">
                                     <Button
                                         variant="outline"
                                         size="icon"
@@ -75,13 +75,13 @@ export function FlashcardCandidateCard({
                     <CardContent>
                         <div className="space-y-1">
                             <h3 className="text-lg font-medium">Back</h3>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground line-clamp-4 overflow-auto max-h-24">
                                 {candidate.back_text}
                             </p>
                         </div>
                     </CardContent>
 
-                    <CardFooter>
+                    <CardFooter className="mt-auto">
                         <p className="text-xs text-muted-foreground">
                             {isRejected && 'Rejected'}
                             {isEdited && 'Edited'}
