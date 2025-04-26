@@ -11,7 +11,6 @@ interface AuthFormProps<T extends FieldValues> {
   description?: string;
   footer?: React.ReactNode;
   className?: string;
-  isSubmitting?: boolean;
 }
 
 export function AuthForm<T extends FieldValues>({
@@ -22,7 +21,6 @@ export function AuthForm<T extends FieldValues>({
   description,
   footer,
   className,
-  isSubmitting,
 }: AuthFormProps<T>) {
   return (
     <Card className={cn("w-full max-w-md mx-auto", className)}>

@@ -1,11 +1,11 @@
-/// <reference types="vitest" />
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { useAuthForm } from "@/hooks/useAuthForm";
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AuthContextType } from "../../providers/AuthProvider";
 import { useAuth } from "../../providers/AuthProvider";
 import { LoginForm } from "../LoginForm";
+import type { Control, FieldValues } from "react-hook-form";
 
 // Mock dependencies
 vi.mock("../../providers/AuthProvider");
@@ -30,9 +30,18 @@ vi.mock("@/components/ui/card", () => ({
   CardFooter: ({ children }: { children: React.ReactNode }) => <div data-testid="card-footer">{children}</div>,
 }));
 
+interface FormFieldProps {
+  control: Control<FieldValues>;
+  name: string;
+  render: (props: {
+    field: { name: string; value: string; onChange: () => void };
+    fieldState: { error?: { message: string } };
+  }) => React.ReactNode;
+}
+
 vi.mock("@/components/ui/form", () => ({
   Form: ({ children }: { children: React.ReactNode }) => <div data-testid="form">{children}</div>,
-  FormField: ({ control, name, render }: any) => {
+  FormField: ({ name, render }: FormFieldProps) => {
     if (name === "email") {
       return render({
         field: { name, value: "", onChange: vi.fn() },
@@ -60,20 +69,42 @@ vi.mock("@/components/ui/form", () => ({
   },
 }));
 
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  [key: string]: unknown;
+}
+
 vi.mock("@/components/ui/input", () => ({
-  Input: (props: any) => <input {...props} />,
+  Input: (props: InputProps) => <input {...props} />,
 }));
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  children: React.ReactNode;
+}
 
 vi.mock("@/components/ui/button", () => ({
-  Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+  Button: ({ children, ...props }: ButtonProps) => <button {...props}>{children}</button>,
 }));
+
+interface LinkProps {
+  children: React.ReactNode;
+  href: string;
+}
 
 vi.mock("@/components/ui/link", () => ({
-  Link: ({ children, href }: any) => <a href={href}>{children}</a>,
+  Link: ({ children, href }: LinkProps) => <a href={href}>{children}</a>,
 }));
 
+interface AuthFormProps {
+  children: React.ReactNode;
+  onSubmit: () => void;
+  title: string;
+  description?: string;
+  footer?: React.ReactNode;
+  form: object;
+}
+
 vi.mock("@/components/auth/AuthForm", () => ({
-  AuthForm: ({ children, onSubmit, title, description, isSubmitting, footer, form }: any) => (
+  AuthForm: ({ children, onSubmit, title, description, footer }: AuthFormProps) => (
     <div data-testid="auth-form">
       <h2>{title}</h2>
       {description && <p>{description}</p>}
@@ -160,10 +191,12 @@ describe("LoginForm", () => {
 
   it("submits form with valid data", async () => {
     // Mock the onSubmit function to extract the callback
-    let onSubmitCallback;
+    let onSubmitCallback: ((data: { email: string; password: string }) => Promise<void>) | undefined;
 
-    vi.mocked(useAuthForm).mockImplementation((options: any) => {
-      onSubmitCallback = options.onSubmit;
+    vi.mocked(useAuthForm).mockImplementation((options) => {
+      if (options && "onSubmit" in options) {
+        onSubmitCallback = options.onSubmit as (data: { email: string; password: string }) => Promise<void>;
+      }
       return mockAuthForm();
     });
 

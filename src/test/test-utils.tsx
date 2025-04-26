@@ -1,6 +1,5 @@
 import { render as testingLibraryRender } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { vi } from "vitest";
 import { Toaster } from "sonner";
 
 // Custom render function that includes providers

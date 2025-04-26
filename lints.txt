@@ -113,3 +113,100 @@
 
 ✖ 56 problems (54 errors, 2 warnings)
 
+
+> cardstrike@0.0.1 lint
+> eslint .
+
+
+> cardstrike@0.0.1 lint
+> eslint .
+
+
+/Users/jakubg/IdeaProjects/cardstrike/src/components/FlashcardCard.tsx
+  32:14  error  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/jakubg/IdeaProjects/cardstrike/src/components/FlashcardGenerationView.tsx
+  45:14  error  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/jakubg/IdeaProjects/cardstrike/src/components/FlashcardList.tsx
+  10:11  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  14:39  error  Unexpected empty object pattern                                                                                                                                                                                                                                                                                                                                                           no-empty-pattern
+
+/Users/jakubg/IdeaProjects/cardstrike/src/components/auth/LoginForm.tsx
+  20:7   error  Writing to a variable defined outside a component or hook is not allowed. Consider using an effect  react-compiler/react-compiler
+  33:42  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                     react/no-unescaped-entities
+
+/Users/jakubg/IdeaProjects/cardstrike/src/components/auth/__tests__/LoginForm.test.tsx
+   1:1  error  Do not use a triple slash reference for vitest, use `import` style instead  @typescript-eslint/triple-slash-reference
+  73:1  error  A record is preferred over an index signature                               @typescript-eslint/consistent-indexed-object-style
+
+/Users/jakubg/IdeaProjects/cardstrike/src/components/providers/AuthProvider.tsx
+  50:6  warning  React Hook useEffect has a missing dependency: 'supabase.auth'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/jakubg/IdeaProjects/cardstrike/src/lib/services/flashcards.service.ts
+   53:36  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   53:51  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   56:40  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   56:55  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  316:5   error  Unnecessary try/catch wrapper                      no-useless-catch
+  406:21  error  'existingCard' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  465:19  error  'existingCard' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  502:19  error  'generation' is assigned a value but never used    @typescript-eslint/no-unused-vars
+
+/Users/jakubg/IdeaProjects/cardstrike/src/lib/services/openrouter.service.ts
+  172:83  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  220:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jakubg/IdeaProjects/cardstrike/src/lib/services/user.service.ts
+  30:16  error  Forbidden non-null assertion  @typescript-eslint/no-non-null-assertion
+  31:19  error  Forbidden non-null assertion  @typescript-eslint/no-non-null-assertion
+
+/Users/jakubg/IdeaProjects/cardstrike/src/pages/index.astro
+  9:3  error  'error' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/jakubg/IdeaProjects/cardstrike/vitest.config.ts
+  8:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 23 problems (22 errors, 1 warning)
+
+
+> cardstrike@0.0.1 lint
+> eslint .
+
+
+/Users/jakubg/IdeaProjects/cardstrike/src/components/auth/LoginForm.tsx
+  33:6  warning  React Hook useEffect has an unnecessary dependency: 'redirectRef.current'. Either exclude it or remove the dependency array. Mutable values like 'redirectRef.current' aren't valid dependencies because mutating them doesn't re-render the component  react-hooks/exhaustive-deps
+  33:7  error    Ref values (the `current` property) may not be accessed during render. (https://react.dev/reference/react/useRef)                                                                                                                                       react-compiler/react-compiler
+  33:7  error    Ref values (the `current` property) may not be accessed during render. (https://react.dev/reference/react/useRef)                                                                                                                                       react-compiler/react-compiler
+
+/Users/jakubg/IdeaProjects/cardstrike/src/components/auth/__tests__/LoginForm.test.tsx
+  72:1  error  A record is preferred over an index signature  @typescript-eslint/consistent-indexed-object-style
+
+/Users/jakubg/IdeaProjects/cardstrike/src/components/providers/AuthProvider.tsx
+  50:6  warning  React Hook useEffect has a missing dependency: 'supabase.auth'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/jakubg/IdeaProjects/cardstrike/src/lib/services/flashcards.service.ts
+   53:36  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   53:51  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   56:40  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   56:55  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  316:5   error  Unnecessary try/catch wrapper                      no-useless-catch
+  406:21  error  'existingCard' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  465:19  error  'existingCard' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  502:19  error  'generation' is assigned a value but never used    @typescript-eslint/no-unused-vars
+
+/Users/jakubg/IdeaProjects/cardstrike/src/lib/services/openrouter.service.ts
+  172:83  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  220:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jakubg/IdeaProjects/cardstrike/src/pages/index.astro
+  9:3  error  'error' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/jakubg/IdeaProjects/cardstrike/vitest.config.ts
+  8:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 17 problems (15 errors, 2 warnings)
+

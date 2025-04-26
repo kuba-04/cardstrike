@@ -23,12 +23,23 @@ const PUBLIC_PATHS = [
   "/api/auth/forgot-password",
 ];
 
+// Define a more specific type for cookie options instead of using any
+interface CookieSerializeOptions {
+  domain?: string;
+  expires?: Date;
+  httpOnly?: boolean;
+  maxAge?: number;
+  path?: string;
+  sameSite?: boolean | "lax" | "strict" | "none";
+  secure?: boolean;
+}
+
 export const onRequest: MiddlewareHandler = async ({ locals, cookies, url, request, redirect }, next) => {
   const supabase = createSupabaseServerClient({
     headers: request.headers,
     cookies: {
       get: (name: string) => cookies.get(name)?.value,
-      set: (name: string, value: string, options: any) => cookies.set(name, value, options),
+      set: (name: string, value: string, options: CookieSerializeOptions) => cookies.set(name, value, options),
     },
   });
 

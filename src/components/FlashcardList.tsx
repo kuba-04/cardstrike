@@ -1,5 +1,4 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import type { User } from "@supabase/supabase-js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -8,11 +7,8 @@ import FlashcardCard from "./FlashcardCard";
 
 const ITEMS_PER_PAGE = 10;
 
-interface FlashcardListProps {
-  initialUser: Pick<User, "id" | "email">;
-}
-
-export default function FlashcardList({ initialUser }: FlashcardListProps) {
+// No props needed, so we can export directly without an interface
+export default function FlashcardList() {
   const [currentPage, setCurrentPage] = useState(1);
   const queryClient = useQueryClient();
 
@@ -48,7 +44,12 @@ export default function FlashcardList({ initialUser }: FlashcardListProps) {
     );
   }
 
-  const { flashcards, pagination } = data!;
+  // Safely handle the case where data might be undefined
+  if (!data) {
+    return <div className="text-center py-8 text-gray-500">No data available.</div>;
+  }
+
+  const { flashcards, pagination } = data;
   const totalPages = Math.ceil(pagination.total / pagination.limit);
 
   if (flashcards.length === 0) {

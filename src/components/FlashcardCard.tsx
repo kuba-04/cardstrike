@@ -30,9 +30,11 @@ export default function FlashcardCard({ flashcard, onDelete }: FlashcardCardProp
       // toast.success("Flashcard deleted successfully");
       onDelete();
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete flashcard";
       toast.error("Error", {
         description: "Failed to delete flashcard. Please try again.",
       });
+      console.error(errorMessage);
     } finally {
       setIsDeleting(false);
     }
@@ -65,10 +67,20 @@ export default function FlashcardCard({ flashcard, onDelete }: FlashcardCardProp
     </Card>
   );
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      setIsFlipped(!isFlipped);
+    }
+  };
+
   return (
     <div
       className="cursor-pointer [perspective:1000px] relative w-full h-[250px]"
       onClick={() => setIsFlipped(!isFlipped)}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="button"
+      aria-label={`Flashcard: ${flashcard.front_text}`}
     >
       <div
         className={`absolute inset-0 w-full h-full transition-transform duration-500 [transform-style:preserve-3d] ${

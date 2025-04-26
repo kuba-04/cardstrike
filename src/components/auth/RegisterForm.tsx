@@ -15,7 +15,7 @@ export function RegisterForm() {
     onSubmit: async (data) => {
       await AuthService.register(data);
       toast.success("Registration successful! Please check your email to verify your account.");
-      window.location.href = "/";
+      return "/";
     },
   });
 
@@ -25,7 +25,6 @@ export function RegisterForm() {
       onSubmit={handleSubmit}
       title="Create an account"
       description="Enter your details to create your account"
-      isSubmitting={isSubmitting}
       footer={
         <div className="text-sm text-muted-foreground">
           <Link href="/auth/login">Already have an account? Sign in</Link>

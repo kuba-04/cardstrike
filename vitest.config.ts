@@ -4,6 +4,7 @@ import react from "@vitejs/plugin-react";
 import { fileURLToPath } from "node:url";
 
 export default defineConfig({
+  // Using 'as any' because of type compatibility issues between vite and vitest plugin systems
   plugins: [react() as any],
   resolve: {
     alias: {

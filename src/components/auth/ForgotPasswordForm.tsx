@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "@/components/ui/link";
+import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { AuthError } from "./AuthError";
 import { AuthForm } from "./AuthForm";
@@ -11,12 +12,17 @@ export function ForgotPasswordForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (formData: FormData) => {
+  // Form for the initial view
+  const form = useForm();
+  // Empty form for the success view
+  const emptyForm = useForm();
+
+  const handleSubmit = async () => {
     try {
       setError(null);
       setIsLoading(true);
 
-      const email = formData.get("email") as string;
+      const email = form.getValues("email") as string;
       const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: {
@@ -42,9 +48,12 @@ export function ForgotPasswordForm() {
   if (isSubmitted) {
     return (
       <AuthForm
+        form={emptyForm}
         title="Check your email"
         description="If an account exists with that email, we've sent a password reset link."
-        onSubmit={async () => {}}
+        onSubmit={async () => {
+          return Promise.resolve();
+        }}
         footer={
           <div className="text-sm text-muted-foreground">
             <Link href="/auth/login">Back to login</Link>
@@ -52,7 +61,7 @@ export function ForgotPasswordForm() {
         }
       >
         <div className="text-center text-sm text-muted-foreground">
-          Didn't receive the email? Check your spam folder or try again.
+          Didn&apos;t receive the email? Check your spam folder or try again.
         </div>
       </AuthForm>
     );
@@ -60,6 +69,7 @@ export function ForgotPasswordForm() {
 
   return (
     <AuthForm
+      form={form}
       title="Forgot password"
       description="Enter your email address and we'll send you a password reset link"
       onSubmit={handleSubmit}
@@ -75,7 +85,7 @@ export function ForgotPasswordForm() {
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
-            name="email"
+            {...form.register("email", { required: true })}
             type="email"
             placeholder="name@example.com"
             required

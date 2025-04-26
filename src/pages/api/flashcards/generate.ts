@@ -22,24 +22,20 @@ export const POST: APIRoute = async ({ request, locals }) => {
       // Initialize service for demo generation (no user ID or database storage)
       const flashcardsService = new FlashcardsService(locals.supabase);
 
-      try {
-        // Generate flashcards without storing to database
-        const candidates = await flashcardsService.generateFlashcardsForDemo(body.source_text);
+      // Generate flashcards without storing to database
+      const candidates = await flashcardsService.generateFlashcardsForDemo(body.source_text);
 
-        // Return a response with a temporary generation ID for the frontend
-        return new Response(
-          JSON.stringify({
-            generation_id: uuidv4(), // Temporary ID, not stored in database
-            candidates,
-          } as GenerateFlashcardResponseDTO),
-          {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-      } catch (demoError) {
-        throw demoError;
-      }
+      // Return a response with a temporary generation ID for the frontend
+      return new Response(
+        JSON.stringify({
+          generation_id: uuidv4(), // Temporary ID, not stored in database
+          candidates,
+        } as GenerateFlashcardResponseDTO),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
     // For authenticated users, proceed with normal flow

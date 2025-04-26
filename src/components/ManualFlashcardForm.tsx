@@ -70,9 +70,10 @@ export default function ManualFlashcardForm() {
 
       // Reset form
       setFormData({ front_text: "", back_text: "" });
-    } catch (error) {
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to create flashcard. Please try again.";
       toast.error("Error", {
-        description: "Failed to create flashcard. Please try again.",
+        description: errorMessage,
       });
     } finally {
       setIsSubmitting(false);

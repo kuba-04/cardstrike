@@ -44,6 +44,7 @@ export function FlashcardGenerationView() {
       });
     } catch (error) {
       // Don't show a toast here as the error state will trigger the useEffect error handler
+      console.error("Generation error:", error instanceof Error ? error.message : "Unknown error");
     }
   };
 

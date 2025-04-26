@@ -1,19 +1,19 @@
-import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { z } from "zod";
 import type {
-  GenerateFlashcardCommand,
-  GenerateFlashcardResponseDTO,
-  UpdateFlashcardCandidateCommand,
-  UpdateFlashcardCandidateResponseDTO,
-  FlashcardDTO,
-  GetFlashcardsResponseDTO,
+  CompleteGenerationResponseDTO,
   CreateFlashcardCommand,
   CreateFlashcardResponseDTO,
+  DeleteFlashcardResponseDTO,
+  FlashcardCandidateDTO,
+  FlashcardDTO,
+  GenerateFlashcardCommand,
+  GenerateFlashcardResponseDTO,
+  GetFlashcardsResponseDTO,
+  UpdateFlashcardCandidateCommand,
+  UpdateFlashcardCandidateResponseDTO,
   UpdateFlashcardCommand,
   UpdateFlashcardResponseDTO,
-  DeleteFlashcardResponseDTO,
-  CompleteGenerationResponseDTO,
-  FlashcardCandidateDTO,
 } from "../../types";
 import { OpenRouterFlashcardService } from "./openrouter-flashcard.service";
 import { UserService } from "./user.service";
@@ -457,145 +457,137 @@ export class FlashcardsService {
   }
 
   async deleteFlashcard(userId: string, flashcardId: string): Promise<DeleteFlashcardResponseDTO> {
-    try {
-      if (!z.string().uuid().safeParse(flashcardId).success) {
-        throw new Error("Invalid flashcard ID format");
-      }
-
-      // Check if flashcard exists and belongs to user
-      const { data: existingCard, error: checkError } = await this.supabase
-        .from("flashcards")
-        .select("id")
-        .eq("id", flashcardId)
-        .eq("user_id", userId)
-        .single();
-
-      if (checkError) {
-        if (checkError.code === "PGRST116") {
-          throw new Error("Flashcard not found");
-        }
-        throw new Error(`Database error: ${checkError.message}`);
-      }
-
-      // Delete flashcard
-      const { error: deleteError } = await this.supabase
-        .from("flashcards")
-        .delete()
-        .eq("id", flashcardId)
-        .eq("user_id", userId);
-
-      if (deleteError) {
-        throw new Error(`Failed to delete flashcard: ${deleteError.message}`);
-      }
-
-      return {
-        message: "Flashcard deleted successfully",
-      };
-    } catch (error) {
-      throw error;
+    if (!z.string().uuid().safeParse(flashcardId).success) {
+      throw new Error("Invalid flashcard ID format");
     }
+
+    // Check if flashcard exists and belongs to user
+    const { data: existingCard, error: checkError } = await this.supabase
+      .from("flashcards")
+      .select("id")
+      .eq("id", flashcardId)
+      .eq("user_id", userId)
+      .single();
+
+    if (checkError) {
+      if (checkError.code === "PGRST116") {
+        throw new Error("Flashcard not found");
+      }
+      throw new Error(`Database error: ${checkError.message}`);
+    }
+
+    // Delete flashcard
+    const { error: deleteError } = await this.supabase
+      .from("flashcards")
+      .delete()
+      .eq("id", flashcardId)
+      .eq("user_id", userId);
+
+    if (deleteError) {
+      throw new Error(`Failed to delete flashcard: ${deleteError.message}`);
+    }
+
+    return {
+      message: "Flashcard deleted successfully",
+    };
   }
 
   async completeGeneration(userId: string, generationId: string): Promise<CompleteGenerationResponseDTO> {
-    try {
-      // Validate generation ID
-      if (!z.string().uuid().safeParse(generationId).success) {
-        throw new Error("Invalid generation ID format");
-      }
+    // Validate generation ID
+    if (!z.string().uuid().safeParse(generationId).success) {
+      throw new Error("Invalid generation ID format");
+    }
 
-      // Check if generation exists and belongs to user
-      const { data: generation, error: genError } = await this.supabase
-        .from("generations")
-        .select("id, status")
-        .eq("id", generationId)
-        .eq("user_id", userId)
+    // Check if generation exists and belongs to user
+    const { data: generation, error: genError } = await this.supabase
+      .from("generations")
+      .select("id, status")
+      .eq("id", generationId)
+      .eq("user_id", userId)
+      .single();
+
+    if (genError) {
+      if (genError.code === "PGRST116") {
+        throw new Error("Generation not found");
+      }
+      throw new Error(`Database error: ${genError.message}`);
+    }
+
+    // Get all candidates for this generation
+    const { data: candidates, error: candError } = await this.supabase
+      .from("flashcard_candidates")
+      .select("*")
+      .eq("generation_id", generationId)
+      .eq("user_id", userId);
+
+    if (candError) {
+      throw new Error(`Failed to fetch candidates: ${candError.message}`);
+    }
+
+    // Calculate statistics
+    const stats = {
+      total_candidates: candidates.length,
+      accepted_unedited: candidates.filter((c) => c.status === "pending").length,
+      accepted_edited: candidates.filter((c) => c.status === "edited").length,
+      rejected: candidates.filter((c) => c.status === "rejected").length,
+    };
+
+    // Create flashcards for accepted candidates
+    const acceptedCandidates = candidates.filter((c) => c.status === "pending" || c.status === "edited");
+    const savedFlashcards: FlashcardDTO[] = [];
+
+    for (const candidate of acceptedCandidates) {
+      const { data: flashcard, error: createError } = await this.supabase
+        .from("flashcards")
+        .insert({
+          front_content: candidate.front_content,
+          back_content: candidate.back_content,
+          user_id: userId,
+          created_by: candidate.status === "edited" ? "AI_EDIT" : "AI_FULL",
+          generation_id: generationId,
+        })
+        .select()
         .single();
 
-      if (genError) {
-        if (genError.code === "PGRST116") {
-          throw new Error("Generation not found");
-        }
-        throw new Error(`Database error: ${genError.message}`);
+      if (createError) {
+        console.error(`Failed to create flashcard for candidate ${candidate.id}:`, createError);
+        continue;
       }
 
-      // Get all candidates for this generation
-      const { data: candidates, error: candError } = await this.supabase
-        .from("flashcard_candidates")
-        .select("*")
-        .eq("generation_id", generationId)
-        .eq("user_id", userId);
-
-      if (candError) {
-        throw new Error(`Failed to fetch candidates: ${candError.message}`);
-      }
-
-      // Calculate statistics
-      const stats = {
-        total_candidates: candidates.length,
-        accepted_unedited: candidates.filter((c) => c.status === "pending").length,
-        accepted_edited: candidates.filter((c) => c.status === "edited").length,
-        rejected: candidates.filter((c) => c.status === "rejected").length,
-      };
-
-      // Create flashcards for accepted candidates
-      const acceptedCandidates = candidates.filter((c) => c.status === "pending" || c.status === "edited");
-      const savedFlashcards: FlashcardDTO[] = [];
-
-      for (const candidate of acceptedCandidates) {
-        const { data: flashcard, error: createError } = await this.supabase
-          .from("flashcards")
-          .insert({
-            front_content: candidate.front_content,
-            back_content: candidate.back_content,
-            user_id: userId,
-            created_by: candidate.status === "edited" ? "AI_EDIT" : "AI_FULL",
-            generation_id: generationId,
-          })
-          .select()
-          .single();
-
-        if (createError) {
-          console.error(`Failed to create flashcard for candidate ${candidate.id}:`, createError);
-          continue;
-        }
-
-        savedFlashcards.push({
-          id: flashcard.id,
-          front_text: flashcard.front_content,
-          back_text: flashcard.back_content,
-          is_ai: true,
-          created_at: flashcard.created_at,
-        });
-      }
-
-      // Update generation status
-      const { data: updateResult, error: updateError } = await this.supabase
-        .from("generations")
-        .update({
-          status: "completed",
-          accepted_unedited_count: stats.accepted_unedited,
-          accepted_edited_count: stats.accepted_edited,
-        })
-        .eq("id", generationId)
-        .eq("user_id", userId);
-
-      if (updateError) {
-        console.error("Failed to update generation:", updateError);
-        throw new Error(`Failed to update generation: ${updateError.message}`);
-      }
-
-      return {
-        message: "Generation review completed",
-        stats: {
-          total_candidates: stats.total_candidates,
-          accepted: stats.accepted_unedited + stats.accepted_edited,
-          rejected: stats.rejected,
-        },
-        saved_flashcards: savedFlashcards,
-      };
-    } catch (error) {
-      throw error;
+      savedFlashcards.push({
+        id: flashcard.id,
+        front_text: flashcard.front_content,
+        back_text: flashcard.back_content,
+        is_ai: true,
+        created_at: flashcard.created_at,
+      });
     }
+
+    // Update generation status
+    const { error: updateError } = await this.supabase
+      .from("generations")
+      .update({
+        status: "completed",
+        accepted_unedited_count: stats.accepted_unedited,
+        accepted_edited_count: stats.accepted_edited,
+      })
+      .eq("id", generationId)
+      .eq("user_id", userId);
+
+    if (updateError) {
+      console.error("Failed to update generation:", updateError);
+      throw new Error(`Failed to update generation: ${updateError.message}`);
+    }
+
+    return {
+      message: "Generation review completed",
+      stats: {
+        total_candidates: stats.total_candidates,
+        accepted: stats.accepted_unedited + stats.accepted_edited,
+        rejected: stats.rejected,
+      },
+      saved_flashcards: savedFlashcards,
+    };
   }
 
   /**
@@ -604,20 +596,13 @@ export class FlashcardsService {
    * @returns Generated flashcard candidates
    */
   async generateFlashcardsForDemo(sourceText: string): Promise<FlashcardCandidateDTO[]> {
-    try {
-      // Validate input
-      const validatedCommand = generateFlashcardSchema.parse({ source_text: sourceText });
+    // Validate input
+    const validatedCommand = generateFlashcardSchema.parse({ source_text: sourceText });
 
-      // Generate flashcard candidates using OpenRouter service
-      const { candidates } = await this.aiService.generateFlashcards(validatedCommand.source_text);
+    // Generate flashcard candidates using OpenRouter service
+    const { candidates } = await this.aiService.generateFlashcards(validatedCommand.source_text);
 
-      // Return candidates without storing anything
-      return candidates;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        throw new Error(`Invalid input: ${error.errors[0].message}`);
-      }
-      throw error;
-    }
+    // Return candidates without storing anything
+    return candidates;
   }
 }

@@ -27,8 +27,8 @@ export class UserService {
       .from("users")
       .insert({
         id: authUser.id,
-        email: authUser.email!,
-        username: authUser.email!.split("@")[0], // Default username from email
+        email: authUser.email || "",
+        username: authUser.email ? authUser.email.split("@")[0] : `user_${authUser.id.substring(0, 8)}`, // Default username from email
         email_verified: authUser.confirmed_at !== null, // Use confirmed_at to determine email verification
         password_hash: "", // We don't need to store this as Supabase Auth handles it
         created_at: new Date().toISOString(),

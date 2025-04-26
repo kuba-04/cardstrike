@@ -116,7 +116,7 @@ export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
 
       {data?.flashcards.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
-          <p>You don't have any flashcards yet. Create your first one!</p>
+          <p>You don&apos;t have any flashcards yet. Create your first one!</p>
         </div>
       ) : (
         <>
@@ -147,10 +147,21 @@ export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
 function FlashcardItem({ flashcard }: { flashcard: FlashcardDTO }) {
   const [isFlipped, setIsFlipped] = useState(false);
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setIsFlipped(!isFlipped);
+    }
+  };
+
   return (
     <div
       className="flashcard-container relative w-full aspect-[4/3] cursor-pointer"
       onClick={() => setIsFlipped(!isFlipped)}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="button"
+      aria-label={`Flashcard: ${flashcard.front_text}`}
     >
       <div className={`flashcard absolute inset-0 w-full h-full ${isFlipped ? "flipped" : ""}`}>
         {/* Front side */}

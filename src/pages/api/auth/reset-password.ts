@@ -32,14 +32,16 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       throw error;
     }
 
-    // After successful password reset, sign in the user
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: data.user.email!,
-      password: password,
-    });
+    // After successful password reset, sign in the user if we have an email
+    if (data.user?.email) {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: data.user.email,
+        password: password,
+      });
 
-    if (signInError) {
-      throw signInError;
+      if (signInError) {
+        throw signInError;
+      }
     }
 
     return new Response(JSON.stringify({ message: "Password reset successful" }), { status: 200 });
