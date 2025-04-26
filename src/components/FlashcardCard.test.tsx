@@ -33,6 +33,27 @@ describe('FlashcardCard', () => {
     });
 
     describe('Interactions', () => {
+        it('handles deletion', async () => {
+            // Mock the fetch call to succeed
+            global.fetch = vi.fn().mockResolvedValueOnce({
+                ok: true
+            });
+
+            const user = userEvent.setup();
+            const onDelete = vi.fn();
+            render(
+                <FlashcardCard {...defaultProps} onDelete={onDelete} />
+            );
+
+            const deleteButton = screen.getAllByRole('button', { name: /delete/i })[0];
+            await user.click(deleteButton);
+
+            // Wait for the deletion to complete
+            await waitFor(() => {
+                expect(onDelete).toHaveBeenCalled();
+            });
+        });
+
         it('handles deletion error state', async () => {
             // Mock the fetch call to fail
             global.fetch = vi.fn().mockRejectedValueOnce(new Error('Failed to delete'));
