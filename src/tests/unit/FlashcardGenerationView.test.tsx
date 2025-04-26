@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { act } from '@testing-library/react';
 import { FlashcardGenerationView } from '../../components/FlashcardGenerationView';
 import { useFlashcardGeneration } from '../../components/hooks/useFlashcardGeneration';
 import { useDemoSession } from '../../components/hooks/useDemoSession';
@@ -16,7 +17,7 @@ describe('FlashcardGenerationView', () => {
         vi.clearAllMocks();
 
         // Default mock implementation for useFlashcardGeneration
-        (useFlashcardGeneration as any).mockReturnValue({
+        vi.mocked(useFlashcardGeneration).mockImplementation(() => ({
             sourceText: '',
             setSourceText: mockSetSourceText,
             generationId: null,
@@ -31,36 +32,48 @@ describe('FlashcardGenerationView', () => {
             completeReview: vi.fn(),
             startEditing: vi.fn(),
             cancelEditing: vi.fn()
-        });
+        }));
 
         // Default mock implementation for useDemoSession
-        (useDemoSession as any).mockReturnValue({
-            isDemo: false
-        });
+        vi.mocked(useDemoSession).mockImplementation(() => ({
+            isDemo: false,
+            hasUsedGeneration: false,
+            markGenerationUsed: vi.fn()
+        }));
     });
 
-    it('should render text input area and generate button', () => {
-        render(<FlashcardGenerationView />);
+    it('should render text input area and generate button', async () => {
+        await act(async () => {
+            render(<FlashcardGenerationView />);
+        });
 
         expect(screen.getByLabelText(/source text/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /generate/i })).toBeInTheDocument();
     });
 
-    it('should show demo mode alert when in demo', () => {
-        (useDemoSession as any).mockReturnValue({
-            isDemo: true
-        });
+    it('should show demo mode alert when in demo', async () => {
+        vi.mocked(useDemoSession).mockImplementation(() => ({
+            isDemo: true,
+            hasUsedGeneration: false,
+            markGenerationUsed: vi.fn()
+        }));
 
-        render(<FlashcardGenerationView />);
+        await act(async () => {
+            render(<FlashcardGenerationView />);
+        });
 
         expect(screen.getByText(/you are in demo mode/i)).toBeInTheDocument();
     });
 
     it('should not call generate when text length is invalid', async () => {
-        render(<FlashcardGenerationView />);
+        await act(async () => {
+            render(<FlashcardGenerationView />);
+        });
 
         const generateButton = screen.getByRole('button', { name: /generate/i });
-        await fireEvent.click(generateButton);
+        await act(async () => {
+            await fireEvent.click(generateButton);
+        });
 
         expect(mockGenerateFlashcards).not.toHaveBeenCalled();
     });
@@ -68,7 +81,7 @@ describe('FlashcardGenerationView', () => {
     it('should call generate when input is valid', async () => {
         const validText = 'a'.repeat(100); // Valid length text
 
-        (useFlashcardGeneration as any).mockReturnValue({
+        vi.mocked(useFlashcardGeneration).mockImplementation(() => ({
             sourceText: validText,
             setSourceText: mockSetSourceText,
             generationId: null,
@@ -83,18 +96,22 @@ describe('FlashcardGenerationView', () => {
             completeReview: vi.fn(),
             startEditing: vi.fn(),
             cancelEditing: vi.fn()
+        }));
+
+        await act(async () => {
+            render(<FlashcardGenerationView />);
         });
 
-        render(<FlashcardGenerationView />);
-
         const generateButton = screen.getByRole('button', { name: /generate/i });
-        await fireEvent.click(generateButton);
+        await act(async () => {
+            await fireEvent.click(generateButton);
+        });
 
         expect(mockGenerateFlashcards).toHaveBeenCalled();
     });
 
-    it('should show loading indicator while generating', () => {
-        (useFlashcardGeneration as any).mockReturnValue({
+    it('should show loading indicator while generating', async () => {
+        vi.mocked(useFlashcardGeneration).mockImplementation(() => ({
             sourceText: 'a'.repeat(100),
             setSourceText: mockSetSourceText,
             generationId: null,
@@ -109,9 +126,11 @@ describe('FlashcardGenerationView', () => {
             completeReview: vi.fn(),
             startEditing: vi.fn(),
             cancelEditing: vi.fn()
-        });
+        }));
 
-        render(<FlashcardGenerationView />);
+        await act(async () => {
+            render(<FlashcardGenerationView />);
+        });
 
         expect(screen.getByTestId('loading-indicator')).toBeInTheDocument();
     });
