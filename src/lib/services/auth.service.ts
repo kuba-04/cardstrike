@@ -24,12 +24,12 @@ export class AuthService {
   }
 
   static async register(data: RegisterFormData) {
-    const { confirmPassword, ...registerData } = data;
+    const { ...registerData } = data;
     return this.fetchApi("register", registerData);
   }
 
   static async resetPassword(data: ResetPasswordFormData) {
-    const { confirmPassword, ...resetData } = data;
+    const { ...resetData } = data;
     return this.fetchApi("reset-password", resetData);
   }
 }

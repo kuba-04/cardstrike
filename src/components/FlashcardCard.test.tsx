@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, mockFlashcard } from "../test/test-utils";
-import FlashcardCard from "./FlashcardCard";
-import { screen, within, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { mockFlashcard, render } from "../test/test-utils";
+import FlashcardCard from "./FlashcardCard";
 
 describe("FlashcardCard", () => {
   const defaultProps = {

@@ -1,10 +1,10 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AuthForm } from "./AuthForm";
-import { AuthError } from "./AuthError";
 import { Link } from "@/components/ui/link";
+import { useState } from "react";
+import { AuthError } from "./AuthError";
+import { AuthForm } from "./AuthForm";
 
 export function ForgotPasswordForm() {
   const [error, setError] = useState<string | null>(null);

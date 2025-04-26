@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { User } from "@supabase/supabase-js";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { toast } from "sonner";
 import type { GetFlashcardsResponseDTO } from "../types";
 import FlashcardCard from "./FlashcardCard";
-import type { User } from "@supabase/supabase-js";
 
 const ITEMS_PER_PAGE = 10;
 

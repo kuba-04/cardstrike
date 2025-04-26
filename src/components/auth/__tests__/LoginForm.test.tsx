@@ -1,12 +1,11 @@
 /// <reference types="vitest" />
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { LoginForm } from "../LoginForm";
-import { useAuth } from "../../providers/AuthProvider";
-import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
-import { act } from "@testing-library/react";
-import type { AuthContextType } from "../../providers/AuthProvider";
 import { useAuthForm } from "@/hooks/useAuthForm";
+import { act, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { AuthContextType } from "../../providers/AuthProvider";
+import { useAuth } from "../../providers/AuthProvider";
+import { LoginForm } from "../LoginForm";
 
 // Mock dependencies
 vi.mock("../../providers/AuthProvider");

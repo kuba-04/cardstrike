@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { AuthForm } from "./AuthForm";
-import { AuthError } from "./AuthError";
 import { Link } from "@/components/ui/link";
-import { toast } from "sonner";
 import { useAuthForm } from "@/hooks/useAuthForm";
 import { registerSchema, type RegisterFormData } from "@/lib/schemas/auth.schema";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { AuthService } from "@/lib/services/auth.service";
+import { toast } from "sonner";
+import { AuthError } from "./AuthError";
+import { AuthForm } from "./AuthForm";
 
 export function RegisterForm() {
   const { form, error, isSubmitting, handleSubmit } = useAuthForm<RegisterFormData>({

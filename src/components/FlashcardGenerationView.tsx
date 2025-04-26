@@ -1,13 +1,13 @@
+import { AlertCircle } from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { CandidateReviewArea } from "./CandidateReviewArea";
+import { GenerateButton } from "./GenerateButton";
+import { useDemoSession } from "./hooks/useDemoSession";
 import { useFlashcardGeneration } from "./hooks/useFlashcardGeneration";
 import { TextInputArea } from "./TextInputArea";
-import { GenerateButton } from "./GenerateButton";
-import { CandidateReviewArea } from "./CandidateReviewArea";
-import { LoadingIndicator } from "./ui/loading-indicator";
-import { useDemoSession } from "./hooks/useDemoSession";
 import { Alert, AlertDescription } from "./ui/alert";
-import { AlertCircle } from "lucide-react";
+import { LoadingIndicator } from "./ui/loading-indicator";
 
 export function FlashcardGenerationView() {
   const {
