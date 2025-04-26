@@ -1,49 +1,28 @@
-name: test and build master
+name: Test and Build
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-  workflow_dispatch: true
 
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v4
-      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: lts/*
           cache: 'npm'
-          
       - name: Install dependencies
         run: npm ci
-        
-      - name: Install Playwright browsers
-        run: npx playwright install chromium
-        
       - name: Run Vitest unit tests
         run: npm run test:unit
-        
-      - name: Run Playwright E2E tests
-        run: npm run test:e2e
-        
       - name: Build production
         run: npm run build
-        
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: production-build
-          path: dist/
-          
-      - name: Store test results
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: |
-            playwright-report/
-            coverage/
+          path: dist/          

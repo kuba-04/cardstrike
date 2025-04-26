@@ -1,11 +1,14 @@
 name: Playwright Tests
 on:
-  push:
+  workflow_run:
+    workflows: ["Test and Build"]
+    types:
+      - completed
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
+
 jobs:
   test:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     timeout-minutes: 60
     runs-on: ubuntu-latest
     env:
@@ -21,12 +24,15 @@ jobs:
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: production-build
+        path: dist/
     - name: Install dependencies
       run: npm ci
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
-    - name: Build project
-      run: npm run build
     - name: Run Playwright tests
       run: npx playwright test
     - uses: actions/upload-artifact@v4
