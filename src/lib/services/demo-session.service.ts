@@ -1,32 +1,46 @@
-export class DemoSessionService {
-    private static readonly DEMO_SESSION_KEY = 'demo_generation_used';
+// Constants
+const DEMO_SESSION_KEY = "demo_generation_used";
 
-    private static isStorageAvailable(): boolean {
-        try {
-            return typeof window !== 'undefined' && !!window.sessionStorage;
-        } catch {
-            return false;
-        }
-    }
+// Helper functions
+const isStorageAvailable = (): boolean => {
+  try {
+    return typeof window !== "undefined" && !!window.sessionStorage;
+  } catch {
+    return false;
+  }
+};
 
-    public static hasUsedGeneration(): boolean {
-        if (!this.isStorageAvailable()) {
-            return false;
-        }
-        return sessionStorage.getItem(this.DEMO_SESSION_KEY) === 'true';
+/**
+ * Service for tracking demo session state
+ */
+export const DemoSessionService = {
+  /**
+   * Check if the user has already used their demo generation
+   */
+  hasUsedGeneration: (): boolean => {
+    if (!isStorageAvailable()) {
+      return false;
     }
+    return sessionStorage.getItem(DEMO_SESSION_KEY) === "true";
+  },
 
-    public static markGenerationUsed(): void {
-        if (!this.isStorageAvailable()) {
-            return;
-        }
-        sessionStorage.setItem(this.DEMO_SESSION_KEY, 'true');
+  /**
+   * Mark that the user has used their demo generation
+   */
+  markGenerationUsed: (): void => {
+    if (!isStorageAvailable()) {
+      return;
     }
+    sessionStorage.setItem(DEMO_SESSION_KEY, "true");
+  },
 
-    public static reset(): void {
-        if (!this.isStorageAvailable()) {
-            return;
-        }
-        sessionStorage.removeItem(this.DEMO_SESSION_KEY);
+  /**
+   * Reset the demo session state
+   */
+  reset: (): void => {
+    if (!isStorageAvailable()) {
+      return;
     }
-} 
+    sessionStorage.removeItem(DEMO_SESSION_KEY);
+  },
+};

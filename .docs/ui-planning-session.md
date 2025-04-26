@@ -11,9 +11,10 @@
 8. A standard JWT authentication flow will be integrated with client-side route guards and accompanied by consistent error notifications (toasts) for issues like token expiration or invalid tokens.
 9. A centralized, global mechanism will be established to handle API loading states and errors, displaying loading spinners and error toasts uniformly across all views.
 10. Tailwind CSS best practices will be applied to ensure proper responsiveness and performance, with particular attention to scrollable areas, carousel behavior for mobile views, and overlay button placements.
-</decisions>.
+    </decisions>.
 
 <matched_recommendations>.
+
 1. Implement a unified view hierarchy with conditional rendering to keep the flashcard generation tool as the primary focus.
 2. Use Shadcn/ui components for consistent popup/toast notifications, especially to inform demo mode users about unsaved flashcards.
 3. Develop post-login routing logic that checks for existing study sessions in the database, redirecting appropriately.
@@ -30,12 +31,13 @@
 <ui_architecture_planning_summary>.
 
 The UI architecture for the MVP is designed around a unified view hierarchy that supports both demo (unauthenticated) and authenticated modes while keeping the flashcard generation tool as the central element. The key views include:
+
 - A main screen with the flashcard generation tool, serving as the focal point in both modes.
 - Conditional secondary navigation (registration, login, study session) that appears only when applicable.
 - A candidate flashcard review interface with two interaction modes: a zoomed-out tile view for quick rejection/deletion and a detailed view for editing and flipping cards.
 - Distinct button placements and interactive behaviors for different screen sizes: on mobile, interactive overlay buttons (reject, edit, and accept) ensure usability, while on large screens, controls such as the accept button and "reject all" option with generation statistics are positioned below the navbar.
-The application will integrate with APIs using a standard JWT flow with client-side route guarding. State management will be handled using React hooks and context, ensuring clear separation between demo and authenticated data, and centralized components will manage loading spinners and error toasts for consistent UI feedback.
-Responsiveness will be achieved using Tailwind CSS, ensuring smooth transitions and interactive elements across devices. Accessibility will follow default practices provided by the UI component libraries, and security concerns related to authentication (like token expiration or invalid tokens) will be managed through error notifications.
+  The application will integrate with APIs using a standard JWT flow with client-side route guarding. State management will be handled using React hooks and context, ensuring clear separation between demo and authenticated data, and centralized components will manage loading spinners and error toasts for consistent UI feedback.
+  Responsiveness will be achieved using Tailwind CSS, ensuring smooth transitions and interactive elements across devices. Accessibility will follow default practices provided by the UI component libraries, and security concerns related to authentication (like token expiration or invalid tokens) will be managed through error notifications.
 
 </ui_architecture_planning_summary>.
 

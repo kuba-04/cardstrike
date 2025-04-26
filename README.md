@@ -56,11 +56,13 @@ CardStrike Flashcards is designed to streamline the process of creating and mana
 ## Getting Started Locally
 
 1. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 2. **Run the development server:**
+
    ```bash
    npm run dev
    ```
@@ -87,7 +89,7 @@ The scope of CardStrike Flashcards includes:
 - **User Account System:** Secure registration, login, and password recovery functionalities.
 - **Spaced Repetition Integration:** Learn efficiently with flashcards scheduled according to a repetition algorithm.
 
-*Note: The MVP excludes advanced repetition algorithms, sharing functionality, and mobile app support.*
+_Note: The MVP excludes advanced repetition algorithms, sharing functionality, and mobile app support._
 
 ## Project Status
 

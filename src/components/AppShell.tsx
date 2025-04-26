@@ -1,24 +1,22 @@
-import { type PropsWithChildren } from 'react'
-import { Toaster } from "sonner"
-import { Navbar } from "@/components/Navbar"
-import { Providers } from "@/components/providers/Providers"
-import type { User } from '@supabase/supabase-js'
+import { type PropsWithChildren } from "react";
+import { Toaster } from "sonner";
+import { Navbar } from "@/components/Navbar";
+import { Providers } from "@/components/providers/Providers";
+import type { User } from "@supabase/supabase-js";
 
 interface AppShellProps extends PropsWithChildren {
-    initialUser: Pick<User, 'id' | 'email'>
-    hideNav?: boolean
+  initialUser: Pick<User, "id" | "email">;
+  hideNav?: boolean;
 }
 
 export function AppShell({ children, initialUser, hideNav = false }: AppShellProps) {
-    return (
-        <Providers initialUser={initialUser}>
-            <div className="flex min-h-screen flex-col">
-                {!hideNav && <Navbar />}
-                <main className="flex-1">
-                    {children}
-                </main>
-                <Toaster richColors closeButton />
-            </div>
-        </Providers>
-    )
-} 
+  return (
+    <Providers initialUser={initialUser}>
+      <div className="flex min-h-screen flex-col">
+        {!hideNav && <Navbar />}
+        <main className="flex-1">{children}</main>
+        <Toaster richColors closeButton />
+      </div>
+    </Providers>
+  );
+}

@@ -1,35 +1,36 @@
-import type { LoginFormData, RegisterFormData, ResetPasswordFormData } from '../schemas/auth.schema'
+import type { LoginFormData, RegisterFormData, ResetPasswordFormData } from "../schemas/auth.schema";
 
-export class AuthService {
-  private static async fetchApi(endpoint: string, data: unknown) {
-    const response = await fetch(`/api/auth/${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
+// Convert class with static methods to a function/object structure
+const fetchApi = async (endpoint: string, data: unknown) => {
+  const response = await fetch(`/api/auth/${endpoint}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
 
-    const responseData = await response.json()
+  const responseData = await response.json();
 
-    if (!response.ok) {
-      throw new Error(responseData.error || 'An unexpected error occurred')
-    }
-
-    return responseData
+  if (!response.ok) {
+    throw new Error(responseData.error || "An unexpected error occurred");
   }
 
-  static async login(data: LoginFormData) {
-    return this.fetchApi('login', data)
-  }
+  return responseData;
+};
 
-  static async register(data: RegisterFormData) {
-    const { confirmPassword, ...registerData } = data
-    return this.fetchApi('register', registerData)
-  }
+export const AuthService = {
+  login: async (data: LoginFormData) => {
+    return fetchApi("login", data);
+  },
 
-  static async resetPassword(data: ResetPasswordFormData) {
-    const { confirmPassword, ...resetData } = data
-    return this.fetchApi('reset-password', resetData)
-  }
-} 
+  register: async (data: RegisterFormData) => {
+    const { ...registerData } = data;
+    return fetchApi("register", registerData);
+  },
+
+  resetPassword: async (data: ResetPasswordFormData) => {
+    const { ...resetData } = data;
+    return fetchApi("reset-password", resetData);
+  },
+};

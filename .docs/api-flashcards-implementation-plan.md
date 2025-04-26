@@ -1,10 +1,13 @@
 # API Endpoint Implementation Plan: Flashcards API
 
 ## 1. Overview of the endpoint
+
 This endpoint provides CRUD operations for flashcards for authenticated users. It encompasses operations to list flashcards with pagination, retrieve a specific flashcard, create a new flashcard (manual creation), update an existing flashcard, and delete a flashcard.
 
 ## 2. Request details
+
 - **HTTP Methods & Endpoints:**
+
   - `GET /api/flashcards`: List flashcards for the authenticated user.
   - `GET /api/flashcards/{id}`: Retrieve details of a specific flashcard.
   - `POST /api/flashcards`: Create a new flashcard.
@@ -33,6 +36,7 @@ This endpoint provides CRUD operations for flashcards for authenticated users. I
     - Path Parameter: `id` (UUID of the flashcard)
 
 ## 3. Types used
+
 - **DTOs and Command Models from `/src/types.ts`:**
   - `FlashcardDTO`: Represents the flashcard structure in API responses.
   - `GetFlashcardsResponseDTO`: Structure for listing flashcards with pagination.
@@ -41,43 +45,61 @@ This endpoint provides CRUD operations for flashcards for authenticated users. I
   - `DeleteFlashcardResponseDTO`: For confirming deletion of a flashcard.
 
 ## 4. Response details
+
 - **GET /api/flashcards:**
+
   - Status: 200 OK
   - Payload:
     ```json
     {
       "flashcards": [
-         { "id": "uuid", "front_text": "Question", "back_text": "Answer", "is_ai": true, "created_at": "timestamp" }
+        { "id": "uuid", "front_text": "Question", "back_text": "Answer", "is_ai": true, "created_at": "timestamp" }
       ],
       "pagination": { "page": 1, "limit": 20, "total": 100 }
     }
     ```
 
 - **GET /api/flashcards/{id}:**
+
   - Status: 200 OK
   - Payload: A single `FlashcardDTO` object
 
 - **POST /api/flashcards:**
+
   - Status: 201 Created
   - Payload:
     ```json
     {
       "message": "Flashcard created successfully",
-      "flashcard": { "id": "uuid", "front_text": "Question", "back_text": "Answer", "is_ai": false, "created_at": "timestamp" }
+      "flashcard": {
+        "id": "uuid",
+        "front_text": "Question",
+        "back_text": "Answer",
+        "is_ai": false,
+        "created_at": "timestamp"
+      }
     }
     ```
 
 - **PUT /api/flashcards/{id}:**
+
   - Status: 200 OK
   - Payload:
     ```json
     {
       "message": "Flashcard updated successfully",
-      "flashcard": { "id": "uuid", "front_text": "Updated question", "back_text": "Updated answer", "is_ai": false, "updated_at": "timestamp" }
+      "flashcard": {
+        "id": "uuid",
+        "front_text": "Updated question",
+        "back_text": "Updated answer",
+        "is_ai": false,
+        "updated_at": "timestamp"
+      }
     }
     ```
 
 - **DELETE /api/flashcards/{id}:**
+
   - Status: 200 OK
   - Payload: `{ "message": "Flashcard deleted successfully" }`
 
@@ -88,6 +110,7 @@ This endpoint provides CRUD operations for flashcards for authenticated users. I
   - 500 Internal Server Error for unexpected server issues
 
 ## 5. Data flow
+
 1. **Request Reception:**
    - The API endpoint receives a request along with query parameters or a JSON body.
    - Authentication middleware ensures the user is authenticated and available via `context.locals.supabase`.
@@ -108,6 +131,7 @@ This endpoint provides CRUD operations for flashcards for authenticated users. I
    - Form and return the JSON response with correct HTTP status codes.
 
 ## 6. Security considerations
+
 - **Authentication & Authorization:**
   - Verify that each request is authenticated (using tokens or session-based authentication).
   - Enforce that flashcard operations are performed only on resources owned by the authenticated user (using Supabase RLS).
@@ -119,6 +143,7 @@ This endpoint provides CRUD operations for flashcards for authenticated users. I
   - Ensure sensitive fields are not exposed in the response DTOs.
 
 ## 7. Error handling
+
 - **Error Scenarios & Status Codes:**
   - **400 Bad Request:** Missing or invalid input fields (e.g., missing `front_text` or `back_text`).
   - **401 Unauthorized:** Requests from an unauthenticated user.
@@ -128,6 +153,7 @@ This endpoint provides CRUD operations for flashcards for authenticated users. I
   - Use try-catch blocks to capture errors, log them appropriately (potentially using a centralized logging system or error logging table), and return user-friendly error messages.
 
 ## 8. Performance considerations
+
 - **Database Optimization:**
   - Use indexes on `user_id` to ensure quick lookups.
   - Limit responses with pagination to prevent large payloads.
@@ -139,6 +165,7 @@ This endpoint provides CRUD operations for flashcards for authenticated users. I
   - Implement rate limiting to mitigate abuse of the endpoints.
 
 ## 9. Implementation steps
+
 1. **API Route Setup:**
    - Create API route files:
      - `src/pages/api/flashcards/index.ts` for handling GET (list) and POST (create) requests.
@@ -161,4 +188,4 @@ This endpoint provides CRUD operations for flashcards for authenticated users. I
 7. **Testing:**
    - Write unit tests for validation, service functions, and API endpoints.
 8. **Documentation & Review:**
-   - Update API documentation and perform code reviews, followed by integration testing in a staging environment before production deployment. 
+   - Update API documentation and perform code reviews, followed by integration testing in a staging environment before production deployment.

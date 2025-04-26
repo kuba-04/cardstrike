@@ -1,13 +1,15 @@
 ---
-import Layout from '@/layouts/Layout.astro';
-import FlashcardListWrapper from '@/components/FlashcardListWrapper';
+import Layout from "@/layouts/Layout.astro";
+import FlashcardListWrapper from "@/components/FlashcardListWrapper";
 
 // Get the user session on the server side
-const { data: { user }, error } = await Astro.locals.supabase.auth.getUser();
+const {
+  data: { user },
+} = await Astro.locals.supabase.auth.getUser();
 
 // Redirect to login if not authenticated
 if (!user) {
-  return Astro.redirect('/auth/login');
+  return Astro.redirect("/auth/login");
 }
 
 // Extract only the necessary user data for the client
@@ -21,10 +23,13 @@ const initialUser = {
   <main class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-8">
       <h1 class="text-3xl font-bold">My Flashcards</h1>
-      <a href="/manual" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
+      <a
+        href="/manual"
+        class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+      >
         Create New
       </a>
     </div>
     <FlashcardListWrapper client:only="react" initialUser={initialUser} />
   </main>
-</Layout> 
+</Layout>

@@ -134,7 +134,9 @@
 
 /* Panel transition styles */
 .panel-transition {
-  transition: opacity 300ms ease-in-out, transform 300ms ease-in-out;
+  transition:
+    opacity 300ms ease-in-out,
+    transform 300ms ease-in-out;
 }
 
 .panel-enter {
@@ -213,7 +215,9 @@
 /* Add a slight hover effect */
 @media (hover: hover) {
   .flashcard:hover:not(.flipped) {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow:
+      0 10px 15px -3px rgba(0, 0, 0, 0.1),
+      0 4px 6px -2px rgba(0, 0, 0, 0.05);
     transform: translateY(-2px);
   }
 }
