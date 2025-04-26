@@ -29,6 +29,7 @@ jobs:
     needs: test-and-build
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    environment: integration
     env:
       PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
       PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
