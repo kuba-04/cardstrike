@@ -3,12 +3,22 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { FlashcardGenerationView } from '../../components/FlashcardGenerationView';
 import { useFlashcardGeneration } from '../../components/hooks/useFlashcardGeneration';
 import { useDemoSession } from '../../components/hooks/useDemoSession';
-import { toast } from 'sonner';
 
-// Mock the custom hooks
+// Create mock functions
+const mockToastError = vi.fn();
+const mockToastSuccess = vi.fn();
+const mockToastPromise = vi.fn();
+
+// Mock the modules
 vi.mock('../../components/hooks/useFlashcardGeneration');
 vi.mock('../../components/hooks/useDemoSession');
-vi.mock('sonner');
+vi.mock('sonner', () => ({
+    toast: {
+        error: mockToastError,
+        success: mockToastSuccess,
+        promise: mockToastPromise
+    }
+}));
 
 describe('FlashcardGenerationView', () => {
     const mockGenerateFlashcards = vi.fn();
@@ -16,6 +26,9 @@ describe('FlashcardGenerationView', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        mockToastError.mockClear();
+        mockToastSuccess.mockClear();
+        mockToastPromise.mockClear();
 
         // Default mock implementation for useFlashcardGeneration
         (useFlashcardGeneration as any).mockReturnValue({
@@ -64,9 +77,10 @@ describe('FlashcardGenerationView', () => {
         const generateButton = screen.getByRole('button', { name: /generate/i });
         await fireEvent.click(generateButton);
 
-        expect(toast.error).toHaveBeenCalledWith('Invalid Input', {
+        expect(mockToastError).toHaveBeenCalledWith('Invalid Input', {
             description: 'Text must be between 100 and 10,000 characters.'
         });
+        expect(mockGenerateFlashcards).not.toHaveBeenCalled();
     });
 
     it('should generate flashcards when input is valid', async () => {
@@ -95,7 +109,7 @@ describe('FlashcardGenerationView', () => {
         await fireEvent.click(generateButton);
 
         expect(mockGenerateFlashcards).toHaveBeenCalled();
-        expect(toast.success).toHaveBeenCalledWith('Success', {
+        expect(mockToastSuccess).toHaveBeenCalledWith('Success', {
             description: 'Flashcards generated successfully!'
         });
     });
@@ -145,7 +159,7 @@ describe('FlashcardGenerationView', () => {
 
         render(<FlashcardGenerationView />);
 
-        expect(toast.error).toHaveBeenCalledWith('Error', {
+        expect(mockToastError).toHaveBeenCalledWith('Error', {
             description: error
         });
     });
