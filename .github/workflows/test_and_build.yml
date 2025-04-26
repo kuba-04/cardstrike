@@ -2,8 +2,6 @@ name: Test, Build and E2E
 on:
   push:
     branches: [master]
-  pull_request:
-    branches: [master]
 
 jobs:
   test-and-build:
