@@ -1,13 +1,13 @@
 name: Playwright Tests
 on:
-  workflow_run:
-    workflows: ["Test and Build"]
-    types:
-      - completed
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   test:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    needs: test-and-build
     timeout-minutes: 60
     runs-on: ubuntu-latest
     env:
