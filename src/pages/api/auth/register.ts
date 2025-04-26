@@ -1,12 +1,12 @@
-import type { APIRoute } from 'astro';
-import { createSupabaseServerClient } from '../../../db/supabase.client';
-import { UserService } from '../../../lib/services/user.service';
-import { z } from 'zod';
+import type { APIRoute } from "astro";
+import { createSupabaseServerClient } from "../../../db/supabase.client";
+import { UserService } from "../../../lib/services/user.service";
+import { z } from "zod";
 
 const registerSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  username: z.string().min(3, 'Username must be at least 3 characters'),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  username: z.string().min(3, "Username must be at least 3 characters"),
 });
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -39,7 +39,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     if (!data.user) {
-      return new Response(JSON.stringify({ error: 'Failed to create user' }), {
+      return new Response(JSON.stringify({ error: "Failed to create user" }), {
         status: 400,
       });
     }
@@ -54,9 +54,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   } catch (error) {
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        error: error instanceof Error ? error.message : "An unexpected error occurred",
       }),
       { status: 500 }
     );
   }
-}; 
+};

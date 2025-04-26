@@ -10,7 +10,7 @@ import node from "@astrojs/node";
 export default defineConfig({
   output: "server",
   experimental: {
-    session: true
+    session: true,
   },
   integrations: [react(), sitemap()],
   server: { port: 3001 },

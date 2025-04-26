@@ -1,6 +1,6 @@
-import type { APIRoute } from 'astro';
-import { createSupabaseServerClient } from '../../../db/supabase.client';
-import { UserService } from '../../../lib/services/user.service';
+import type { APIRoute } from "astro";
+import { createSupabaseServerClient } from "../../../db/supabase.client";
+import { UserService } from "../../../lib/services/user.service";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -26,7 +26,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     if (!data.user) {
-      return new Response(JSON.stringify({ error: 'Failed to authenticate user' }), {
+      return new Response(JSON.stringify({ error: "Failed to authenticate user" }), {
         status: 400,
       });
     }
@@ -41,9 +41,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   } catch (error) {
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        error: error instanceof Error ? error.message : "An unexpected error occurred",
       }),
       { status: 500 }
     );
   }
-}; 
+};

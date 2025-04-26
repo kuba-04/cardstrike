@@ -1,5 +1,5 @@
-import type { MiddlewareHandler } from 'astro';
-import { createSupabaseServerClient } from '../db/supabase.client';
+import type { MiddlewareHandler } from "astro";
+import { createSupabaseServerClient } from "../db/supabase.client";
 
 // Public paths - Auth API endpoints & Server-Rendered Astro Pages
 const PUBLIC_PATHS = [
@@ -15,7 +15,7 @@ const PUBLIC_PATHS = [
   "/auth/login",
   "/auth/register",
   "/auth/reset-password",
-  "/auth/forgot-password" ,
+  "/auth/forgot-password",
   // Auth API endpoints
   "/api/auth/login",
   "/api/auth/register",
@@ -23,10 +23,7 @@ const PUBLIC_PATHS = [
   "/api/auth/forgot-password",
 ];
 
-export const onRequest: MiddlewareHandler = async (
-  { locals, cookies, url, request, redirect }, 
-  next
-) => {
+export const onRequest: MiddlewareHandler = async ({ locals, cookies, url, request, redirect }, next) => {
   const supabase = createSupabaseServerClient({
     headers: request.headers,
     cookies: {
@@ -53,8 +50,8 @@ export const onRequest: MiddlewareHandler = async (
 
   // Only check protected routes after setting up the user
   if (!PUBLIC_PATHS.includes(url.pathname) && !user) {
-    return redirect('/auth/login');
+    return redirect("/auth/login");
   }
 
   return next();
-}; 
+};

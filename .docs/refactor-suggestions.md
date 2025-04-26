@@ -1,4 +1,5 @@
 1. TOP 5 Files by LOC:
+
 - `./src/lib/services/flashcards.service.ts` (632 lines)
 - `./src/db/database.types.ts` (350 lines)
 - `./src/components/hooks/useFlashcardGeneration.ts` (255 lines)
@@ -13,7 +14,8 @@ Read file: ./src/db/database.types.ts
 Let me provide detailed refactoring suggestions for each of the top 5 files:
 
 1. `flashcards.service.ts` (632 lines)
-Refactoring suggestions:
+   Refactoring suggestions:
+
 - Split into smaller, focused services following Single Responsibility Principle:
   - `FlashcardGenerationService` - AI generation logic
   - `FlashcardStorageService` - Database operations
@@ -26,7 +28,8 @@ Refactoring suggestions:
 - Use TypeScript decorators for validation and error handling
 
 2. `database.types.ts` (350 lines)
-Refactoring suggestions:
+   Refactoring suggestions:
+
 - Split types into domain-specific files:
   - `flashcard.types.ts`
   - `user.types.ts`
@@ -38,7 +41,8 @@ Refactoring suggestions:
 - Use branded types for IDs to improve type safety
 
 3. `useFlashcardGeneration.ts` (255 lines)
-Refactoring suggestions:
+   Refactoring suggestions:
+
 - Break down into smaller, focused hooks:
   - `useFlashcardValidation`
   - `useFlashcardGeneration`
@@ -50,7 +54,8 @@ Refactoring suggestions:
 - Add loading states and optimistic updates
 
 4. `openrouter.service.ts` (222 lines)
-Refactoring suggestions:
+   Refactoring suggestions:
+
 - Implement the Adapter pattern for different AI providers
 - Use the Strategy pattern for different model configurations
 - Extract API client logic into a separate class
@@ -60,7 +65,8 @@ Refactoring suggestions:
 - Implement proper error handling and logging
 
 5. `types.ts` (135 lines)
-Refactoring suggestions:
+   Refactoring suggestions:
+
 - Split into domain-specific type files
 - Use TypeScript utility types to reduce duplication
 - Create separate interfaces for DTOs and domain models
@@ -70,24 +76,29 @@ Refactoring suggestions:
 - Consider using code generation for API types
 
 General recommendations based on the tech stack:
+
 1. Leverage Astro's built-in optimizations:
+
    - Use Astro components for static content
    - Only use React for interactive components
    - Implement proper client/server component splitting
 
 2. TypeScript improvements:
+
    - Enable strict mode
    - Use const assertions
    - Implement proper error handling
    - Use discriminated unions for state management
 
 3. Testing improvements:
+
    - Add Vitest unit tests for services
    - Implement Playwright E2E tests for critical flows
    - Use MSW for API mocking
    - Add visual regression tests
 
 4. Performance optimizations:
+
    - Implement proper caching strategies
    - Use React.memo for expensive components
    - Implement proper code splitting

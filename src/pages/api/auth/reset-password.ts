@@ -1,9 +1,9 @@
-import type { APIRoute } from 'astro';
-import { createSupabaseServerClient } from '@/db/supabase.client';
-import { z } from 'zod';
+import type { APIRoute } from "astro";
+import { createSupabaseServerClient } from "@/db/supabase.client";
+import { z } from "zod";
 
 const resetPasswordSchema = z.object({
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 export const prerender = false;
@@ -27,10 +27,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     if (error) {
       if (error.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Too many requests. Please try again later.' }),
-          { status: 429 }
-        );
+        return new Response(JSON.stringify({ error: "Too many requests. Please try again later." }), { status: 429 });
       }
       throw error;
     }
@@ -45,18 +42,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       throw signInError;
     }
 
-    return new Response(
-      JSON.stringify({ message: 'Password reset successful' }),
-      { status: 200 }
-    );
+    return new Response(JSON.stringify({ message: "Password reset successful" }), { status: 200 });
   } catch (error) {
-    console.error('Reset password error:', error);
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
-    const status = message.includes('Invalid') || message.includes('expired') ? 400 : 500;
-    
-    return new Response(
-      JSON.stringify({ error: message }),
-      { status }
-    );
+    console.error("Reset password error:", error);
+    const message = error instanceof Error ? error.message : "An unexpected error occurred";
+    const status = message.includes("Invalid") || message.includes("expired") ? 400 : 500;
+
+    return new Response(JSON.stringify({ error: message }), { status });
   }
-}; 
+};

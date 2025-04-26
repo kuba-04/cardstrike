@@ -59,34 +59,38 @@ Using Zod for form validation:
 
 ```typescript
 // src/lib/validations/auth.ts
-import { z } from 'zod';
+import { z } from "zod";
 
-export const registerSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string(),
-  username: z.string().min(3, 'Username must be at least 3 characters')
-}).refine(data => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"]
-});
+export const registerSchema = z
+  .object({
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string(),
+    username: z.string().min(3, "Username must be at least 3 characters"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 export const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required')
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
 });
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email('Invalid email address')
+  email: z.string().email("Invalid email address"),
 });
 
-export const resetPasswordSchema = z.object({
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string()
-}).refine(data => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"]
-});
+export const resetPasswordSchema = z
+  .object({
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 ```
 
 ### 2.4 Error Handling UI
@@ -263,16 +267,19 @@ export const onRequest = defineMiddleware(async ({ locals, cookies }, next) => {
   locals.supabase = supabaseClient;
 
   // Check for auth session
-  const accessToken = cookies.get('sb-access-token');
+  const accessToken = cookies.get("sb-access-token");
   if (accessToken) {
-    const { data: { session }, error } = await supabaseClient.auth.getSession();
+    const {
+      data: { session },
+      error,
+    } = await supabaseClient.auth.getSession();
     if (session) {
       locals.session = session;
     }
   }
 
   // Check for demo session
-  const demoToken = cookies.get('demo-session');
+  const demoToken = cookies.get("demo-session");
   if (demoToken) {
     locals.isDemo = true;
   }
@@ -301,15 +308,18 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
 ```typescript
 // src/lib/errors/auth.errors.ts
 export class AuthenticationError extends Error {
-  constructor(message: string, public code: string) {
+  constructor(
+    message: string,
+    public code: string
+  ) {
     super(message);
   }
 }
 
 export const AUTH_ERROR_CODES = {
-  INVALID_CREDENTIALS: 'auth/invalid-credentials',
-  EMAIL_IN_USE: 'auth/email-already-in-use',
-  WEAK_PASSWORD: 'auth/weak-password',
+  INVALID_CREDENTIALS: "auth/invalid-credentials",
+  EMAIL_IN_USE: "auth/email-already-in-use",
+  WEAK_PASSWORD: "auth/weak-password",
   // ... other error codes
 } as const;
 ```

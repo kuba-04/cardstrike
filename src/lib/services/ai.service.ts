@@ -1,6 +1,6 @@
-import type { FlashcardCandidateDTO } from '../../types';
-import type { SupabaseClient } from '@supabase/supabase-js';
-import { createHash } from 'crypto';
+import type { FlashcardCandidateDTO } from "../../types";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createHash } from "crypto";
 
 export interface AIServiceResponse {
   candidates: FlashcardCandidateDTO[];
@@ -21,27 +21,27 @@ export class AIService {
         candidate_id: crypto.randomUUID(),
         front_text: "What is the capital of France?",
         back_text: "Paris",
-        status: 'pending'
+        status: "pending",
       },
       {
         candidate_id: crypto.randomUUID(),
         front_text: "Which is the largest planet in our solar system?",
         back_text: "Jupiter",
-        status: 'pending'
+        status: "pending",
       },
       {
         candidate_id: crypto.randomUUID(),
         front_text: "How to say hello in arabic?",
         back_text: "مرحبا",
-        status: 'pending'
-      }
+        status: "pending",
+      },
     ];
 
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     return {
-      candidates: mockCandidates
+      candidates: mockCandidates,
     };
   }
 
@@ -50,33 +50,29 @@ export class AIService {
    */
   async logError(error: Error, userId: string, generationId: string): Promise<void> {
     if (!this.supabase) {
-      console.error('AI Service Error (no database connection):', {
+      console.error("AI Service Error (no database connection):", {
         userId,
         generationId,
         error: error.message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
       return;
     }
 
     // Generate error hash using MD5 for error deduplication
-    const errorHash = createHash('md5')
-      .update(error.message)
-      .digest('hex');
+    const errorHash = createHash("md5").update(error.message).digest("hex");
 
-    const { error: dbError } = await this.supabase
-      .from('generation_error_logs')
-      .insert({
-        user_id: userId,
-        generation_id: generationId,
-        error_message: error.message,
-        error_hash: errorHash,
-        error_stack: error.stack || null,
-        created_at: new Date().toISOString()
-      });
+    const { error: dbError } = await this.supabase.from("generation_error_logs").insert({
+      user_id: userId,
+      generation_id: generationId,
+      error_message: error.message,
+      error_hash: errorHash,
+      error_stack: error.stack || null,
+      created_at: new Date().toISOString(),
+    });
 
     if (dbError) {
-      console.error('Failed to log AI service error:', dbError);
+      console.error("Failed to log AI service error:", dbError);
     }
   }
-} 
+}

@@ -1,54 +1,63 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // Custom error types
 export class OpenRouterError extends Error {
-  constructor(message: string, public readonly cause?: unknown) {
+  constructor(
+    message: string,
+    public readonly cause?: unknown
+  ) {
     super(message);
-    this.name = 'OpenRouterError';
+    this.name = "OpenRouterError";
   }
 }
 
 export class OpenRouterNetworkError extends OpenRouterError {
-  constructor(message: string, public readonly status?: number, cause?: unknown) {
+  constructor(
+    message: string,
+    public readonly status?: number,
+    cause?: unknown
+  ) {
     super(message, cause);
-    this.name = 'OpenRouterNetworkError';
+    this.name = "OpenRouterNetworkError";
   }
 }
 
 export class OpenRouterValidationError extends OpenRouterError {
   constructor(message: string, cause?: unknown) {
     super(message, cause);
-    this.name = 'OpenRouterValidationError';
+    this.name = "OpenRouterValidationError";
   }
 }
 
 export class OpenRouterProviderError extends OpenRouterError {
   constructor(
-    message: string, 
+    message: string,
     public readonly providerName: string,
     public readonly code: number,
     public readonly rawError?: unknown
   ) {
     super(message);
-    this.name = 'OpenRouterProviderError';
+    this.name = "OpenRouterProviderError";
   }
 }
 
 // Response schema validation
 export const OpenRouterResponseSchema = z.object({
-  choices: z.array(z.object({
-    message: z.object({
-      content: z.string(),
-      role: z.string()
-    }),
-    finish_reason: z.string().optional()
-  })),
+  choices: z.array(
+    z.object({
+      message: z.object({
+        content: z.string(),
+        role: z.string(),
+      }),
+      finish_reason: z.string().optional(),
+    })
+  ),
   model: z.string(),
   usage: z.object({
     completion_tokens: z.number(),
     prompt_tokens: z.number(),
-    total_tokens: z.number()
-  })
+    total_tokens: z.number(),
+  }),
 });
 
 export type OpenRouterResponse = z.infer<typeof OpenRouterResponseSchema>;
@@ -69,7 +78,7 @@ export interface ServiceConfig extends ModelParameters {
 
 export interface RequestPayload {
   messages: {
-    role: 'system' | 'user' | 'assistant';
+    role: "system" | "user" | "assistant";
     content: string;
   }[];
   model: string;
@@ -92,8 +101,8 @@ export class OpenRouterService {
 
   constructor() {
     // Initialize with environment variables
-    this._defaultSystemMessage = import.meta.env.OPENROUTER_DEFAULT_SYSTEM_MESSAGE || 'You are a helpful assistant.';
-    this._modelName = import.meta.env.OPENROUTER_MODEL_NAME || 'qwen/qwq-32b:free';
+    this._defaultSystemMessage = import.meta.env.OPENROUTER_DEFAULT_SYSTEM_MESSAGE || "You are a helpful assistant.";
+    this._modelName = import.meta.env.OPENROUTER_MODEL_NAME || "qwen/qwq-32b:free";
     this._apiUrl = import.meta.env.OPENROUTER_API_URL;
 
     // Default model parameters
@@ -102,15 +111,15 @@ export class OpenRouterService {
       max_tokens: 1000,
       top_p: 1,
       frequency_penalty: 0,
-      presence_penalty: 0
+      presence_penalty: 0,
     };
 
     // Initialize headers
     this._headers = {
-      'Authorization': `Bearer ${import.meta.env.OPENROUTER_API_KEY}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': import.meta.env.OPENROUTER_HTTP_REFERER || 'http://localhost:3001',
-      'X-Title': 'CardStrike'
+      Authorization: `Bearer ${import.meta.env.OPENROUTER_API_KEY}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": import.meta.env.OPENROUTER_HTTP_REFERER || "http://localhost:3001",
+      "X-Title": "CardStrike",
     };
 
     this._logger = console;
@@ -126,7 +135,7 @@ export class OpenRouterService {
       const response = await this._executeRequest(payload);
       return this._parseResponse(response);
     } catch (error) {
-      this._logger.error('Error sending request to OpenRouter:', error);
+      this._logger.error("Error sending request to OpenRouter:", error);
       throw error;
     }
   }
@@ -141,27 +150,31 @@ export class OpenRouterService {
     // Update model parameters
     const { temperature, max_tokens, top_p, frequency_penalty, presence_penalty } = config;
     Object.assign(this._modelParameters, {
-      temperature, max_tokens, top_p, frequency_penalty, presence_penalty
+      temperature,
+      max_tokens,
+      top_p,
+      frequency_penalty,
+      presence_penalty,
     });
   }
 
   private _buildPayload(userMessage: string): RequestPayload {
     return {
       messages: [
-        { role: 'system', content: this._defaultSystemMessage },
-        { role: 'user', content: userMessage }
+        { role: "system", content: this._defaultSystemMessage },
+        { role: "user", content: userMessage },
       ],
       model: this._modelName,
-      ...this._modelParameters
+      ...this._modelParameters,
     };
   }
 
   private async _executeRequest(payload: RequestPayload, retryCount = 0): Promise<any> {
     try {
       const response = await fetch(this._apiUrl, {
-        method: 'POST',
+        method: "POST",
         headers: this._headers,
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       const responseData = await response.json();
@@ -182,7 +195,7 @@ export class OpenRouterService {
         if (response.status === 429 && retryCount < this._maxRetries) {
           const delay = this._retryDelay * Math.pow(2, retryCount);
           this._logger.warn(`Rate limited, retrying in ${delay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
           return this._executeRequest(payload, retryCount + 1);
         }
 
@@ -200,11 +213,7 @@ export class OpenRouterService {
       }
 
       // Handle network errors
-      throw new OpenRouterNetworkError(
-        'Network error: Failed to connect to OpenRouter API',
-        undefined,
-        error
-      );
+      throw new OpenRouterNetworkError("Network error: Failed to connect to OpenRouter API", undefined, error);
     }
   }
 
@@ -213,11 +222,8 @@ export class OpenRouterService {
       const result = OpenRouterResponseSchema.parse(apiResponse);
       return result;
     } catch (error) {
-      this._logger.error('Failed to parse OpenRouter response:', apiResponse);
-      throw new OpenRouterValidationError(
-        'Invalid response format received from OpenRouter API',
-        error
-      );
+      this._logger.error("Failed to parse OpenRouter response:", apiResponse);
+      throw new OpenRouterValidationError("Invalid response format received from OpenRouter API", error);
     }
   }
-} 
+}

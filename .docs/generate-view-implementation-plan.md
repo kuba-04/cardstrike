@@ -1,12 +1,15 @@
 # View implementation plan: Flashcard Generation View
 
 ## 1. Overview
+
 This view provides an interface for users (both demo and authenticated) to generate AI-driven flashcard candidates from a block of plain text (100 to 10,000 characters). Users can input text, trigger AI generation, review the generated candidates (with options to accept, edit, or reject), and complete the process to save accepted flashcards. The view includes accessible form inputs, loading indicators, toast notifications, and supports secure operations for authenticated sessions.
 
 ## 2. Routing of the view
+
 The Flashcard Generation View will be accessible at the root path: `/`.
 
 ## 3. Component structure
+
 ```
 src/pages/index.astro
 └── FlashcardGenerationView (React client component)
@@ -23,7 +26,9 @@ src/pages/index.astro
 ```
 
 ## 4. Component details
+
 ### FlashcardGenerationView
+
 - **Description:** Main container that orchestrates the AI flashcard generation process, manages state, handles API interactions, and renders the entire UI.
 - **Main elements:** Container `<div>`, integrates child components.
 - **Supported interactions:** Handling text input updates, generate trigger, candidate editing/rejection, and review completion.
@@ -32,6 +37,7 @@ src/pages/index.astro
 - **Props:** None (retrieves necessary context from global hooks or parent Astro page).
 
 ### TextInputArea
+
 - **Description:** A controlled text area for users to paste the source text for flashcard generation.
 - **Main elements:** `<label>`, `<textarea>`, character count display, error message area.
 - **Supported interactions:** `onChange` event to update parent state.
@@ -40,6 +46,7 @@ src/pages/index.astro
 - **Props:** `value: string`, `onChange: (value: string) => void`, `minLength: number`, `maxLength: number`, `error: string | null`.
 
 ### GenerateButton
+
 - **Description:** Button to trigger the AI generation API call.
 - **Main elements:** `<button>` element with loading and disabled states.
 - **Supported interactions:** `onClick` to trigger generation request.
@@ -48,6 +55,7 @@ src/pages/index.astro
 - **Props:** `onClick: () => void`, `isDisabled: boolean`, `isLoading: boolean`.
 
 ### CandidateReviewArea
+
 - **Description:** Displays the list of generated flashcard candidate cards once generation is complete. Provides an option to complete the review process.
 - **Main elements:** List or grid container; renders multiple `FlashcardCandidateCard` components; includes a `CompleteReviewButton`.
 - **Supported interactions:** Propagates candidate-specific actions (reject, edit) to the parent; handles completion click.
@@ -56,6 +64,7 @@ src/pages/index.astro
 - **Props:** `candidates: CandidateWithLocalStatus[]`, `generationId: string | null`, `onRejectCandidate: (candidateId: string) => void`, `onEditCandidateStart: (candidateId: string) => void`, `onCompleteReview: () => void`, `isLoadingCompletion: boolean`.
 
 ### FlashcardCandidateCard
+
 - **Description:** Displays an individual candidate with its front and back text. Offers actions to edit or reject the candidate.
 - **Main elements:** Card container, text displays, Edit and Reject buttons.
 - **Supported interactions:** Clicking the Edit button launches the `EditCandidateForm`; clicking Reject triggers a candidate rejection API call.
@@ -64,6 +73,7 @@ src/pages/index.astro
 - **Props:** `candidate: CandidateWithLocalStatus`, `onReject: (candidateId: string) => void`, `onEditStart: (candidateId: string) => void`.
 
 ### EditCandidateForm
+
 - **Description:** Modal or inline form that allows users to edit a candidate's text.
 - **Main elements:** Input fields (or textarea) for editing front and back text, Save and Cancel buttons.
 - **Supported interactions:** `onChange` for inputs; Save triggers update API call; Cancel closes the form.
@@ -72,6 +82,7 @@ src/pages/index.astro
 - **Props:** `candidate: CandidateWithLocalStatus`, `onSave: (candidateId: string, updateData: UpdateFlashcardCandidateCommand) => Promise<void>`, `onCancel: () => void`, `isSaving: boolean`.
 
 ### LoadingIndicator
+
 - **Description:** Visual spinner indicating that an API call or processing is in progress.
 - **Main elements:** Spinner icon (e.g., Shadcn Loader).
 - **Supported interactions:** None.
@@ -79,6 +90,7 @@ src/pages/index.astro
 - **Props:** `isLoading: boolean`.
 
 ### NotificationArea
+
 - **Description:** Manages toast notifications to display info, success, or error messages to the user.
 - **Main elements:** Toast container and individual toast messages.
 - **Supported interactions:** Supports dismissal of messages.
@@ -88,6 +100,7 @@ src/pages/index.astro
 ## 5. Types
 
 **DTOs from backend (src/types.ts):**
+
 - `GenerateFlashcardCommand`: { source_text: string }
 - `GenerateFlashcardResponseDTO`: { generation_id: string, candidates: FlashcardCandidateDTO[] }
 - `FlashcardCandidateDTO`: { candidate_id: string, front_text: string, back_text: string, status: 'pending' | 'accepted' | 'edited' }
@@ -97,6 +110,7 @@ src/pages/index.astro
 - `FlashcardDTO`: { id: string, front_text: string, back_text: string, is_ai: boolean, created_at: string }
 
 **Custom View Models:**
+
 - `CandidateWithLocalStatus`:
   - candidate_id: string
   - front_text: string
@@ -113,7 +127,9 @@ src/pages/index.astro
   - duration?: number
 
 ## 6. State management
+
 State is managed in the `FlashcardGenerationView` component using a custom hook (e.g., `useFlashcardGeneration`). Key state variables include:
+
 - `sourceText`: string – user input
 - `generationId`: string | null – ID from the generation API
 - `candidates`: CandidateWithLocalStatus[] – list of candidate flashcards
@@ -125,7 +141,9 @@ State is managed in the `FlashcardGenerationView` component using a custom hook 
 - `isAuthenticated`: boolean – user auth status obtained via context or Supabase client
 
 ## 7. API Integration
+
 APIs are integrated using fetch requests within the custom hook and component event handlers:
+
 - **Generate Flashcards:**
   - Endpoint: POST /api/flashcards/generate
   - Request: { source_text: string }
@@ -142,6 +160,7 @@ APIs are integrated using fetch requests within the custom hook and component ev
   - Response: { message: string, stats: { total_candidates, accepted, rejected }, saved_flashcards: FlashcardDTO[] }
 
 ## 8. User interactions
+
 - **Text Input:** User types/pastes text; character count and validation update in real time.
 - **Generate:** Clicking the GenerateButton triggers the generation API call; shows a loading indicator; on success, candidate cards appear.
 - **Reject:** Clicking a candidate's Reject button calls the API to mark it as rejected; the card updates visually and a toast confirms the action.
@@ -149,17 +168,20 @@ APIs are integrated using fetch requests within the custom hook and component ev
 - **Complete Review:** Clicking the CompleteReviewButton sends a request to complete the review; on success, displays review stats and saves accepted flashcards.
 
 ## 9. Conditions and validation
+
 - **Text Length:** Must be between 100 and 10,000 characters; otherwise, disable generation and display error message.
 - **Loading States:** Disable buttons and show LoadingIndicator during API calls.
 - **Candidate State:** Ensure candidates have not been rejected before allowing completion; disable actions when operations are in progress.
 - **Authentication:** Verify user is authenticated before allowing flashcards to be saved; handle 401 responses.
 
 ## 10. Error handling
+
 - **Validation Errors:** Display inline error messages for invalid text length.
 - **API Errors:** Catch errors from API calls and display toast notifications. For 400 errors (e.g., no candidates accepted), inform the user; for 401 errors, prompt re-authentication; for 500 errors, display a generic error message.
 - **Network Issues:** Display a toast notifying the user of connectivity issues.
 
 ## 11. Implementation steps
+
 1. Create/update the Astro page at `src/pages/index.astro` to render the FlashcardGenerationView as a client component.
 2. Develop the `FlashcardGenerationView` component to manage overall state and layout the sub-components.
 3. Implement the `useFlashcardGeneration` hook to encapsulate state management and API calls.
@@ -173,4 +195,4 @@ APIs are integrated using fetch requests within the custom hook and component ev
 11. Integrate a Toast/Notification system (e.g., from Shadcn/ui) to display error and success messages.
 12. Ensure all components are accessible (proper ARIA labels, focus management, keyboard navigability) and styled with Tailwind.
 13. Test each component in isolation and then the full flow, handling edge cases (e.g., API failures, invalid inputs, unauthenticated access).
-14. Perform end-to-end testing to confirm the complete generation and review flows work as expected. 
+14. Perform end-to-end testing to confirm the complete generation and review flows work as expected.

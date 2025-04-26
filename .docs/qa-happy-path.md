@@ -1,10 +1,10 @@
 Below is a sequential set of curl commands covering a happy-path workflow. In this sequence, you will:
 
-1. Generate flashcards using the AI endpoint  
-2. Accept the generated flashcard by "updating" it (simulate acceptance)  
-3. Edit the accepted flashcard's details  
-4. List (GET) flashcards from the flashcards table  
-5. Delete the flashcard  
+1. Generate flashcards using the AI endpoint
+2. Accept the generated flashcard by "updating" it (simulate acceptance)
+3. Edit the accepted flashcard's details
+4. List (GET) flashcards from the flashcards table
+5. Delete the flashcard
 6. Verify that the flashcard has been deleted via a GET request
 
 Note: In the PUT and DELETE commands, replace `<FLASHCARD_ID>` with the ID returned from your generate endpoint.
@@ -36,6 +36,7 @@ curl -X PUT "http://localhost:3001/api/flashcards/candidates/8f71da8a-8f47-4945-
     "back_text": "مرحبا | Marhaba"
   }'
 ```
+
 ---
 
 ### 3. Reject the Candidate
@@ -45,6 +46,7 @@ _(Make further changes to the flashcard details)_
 ```bash
 curl -X PUT "http://localhost:3001/api/flashcards/candidates/df7e5eb4-e184-418e-88b2-699295bf264f/reject" \
 ```
+
 ---
 
 ### 4. Complete AI generation
@@ -54,7 +56,6 @@ _(Make further changes to the flashcard details)_
 ```bash
 curl -X PUT "http://localhost:3001/api/flashcards/generations/cf8eb352-42b7-4135-b579-e56ad4717ed9/complete" \
 ```
-
 
 ---
 
@@ -73,8 +74,8 @@ curl -X GET "http://localhost:3001/api/flashcards?filter=ai&page=1&limit=20&sort
 ```bash
 curl -X GET "http://localhost:3001/api/flashcards/078e550b-4d7e-43f4-b895-acc9a8fcd457"
 ```
----
 
+---
 
 ### 7. Edit the Flashcard
 
