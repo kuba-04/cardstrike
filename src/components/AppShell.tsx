@@ -1,5 +1,4 @@
 import { type PropsWithChildren } from "react";
-import { Toaster } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Providers } from "@/components/providers/Providers";
 import type { User } from "@supabase/supabase-js";
@@ -15,7 +14,6 @@ export function AppShell({ children, initialUser, hideNav = false }: AppShellPro
       <div className="flex min-h-screen flex-col">
         {!hideNav && <Navbar />}
         <main className="flex-1">{children}</main>
-        <Toaster richColors closeButton />
       </div>
     </Providers>
   );
