@@ -26,16 +26,16 @@ export function FlashcardCandidateCard({
   const isEdited = candidate.local_status === "edited-saved";
 
   return (
-    <Card className={`min-h-[250px] h-full ${isRejected ? "opacity-50" : ""}`} data-testid="flashcard-candidate">
+    <Card className={`min-h-[320px] h-full flex flex-col ${isRejected ? "opacity-50" : ""}`} data-testid="flashcard-candidate">
       {isEditing ? (
         <EditCandidateForm candidate={candidate} onSave={onUpdate} onCancel={onCancelEditing} />
       ) : (
         <>
-          <CardHeader className="space-y-1">
+          <CardHeader className="space-y-2 pb-3">
             <div className="flex items-start justify-between">
               <div className="flex-1 space-y-1">
                 <h3 className="text-lg font-medium">Front</h3>
-                <p className="text-sm text-muted-foreground line-clamp-4 overflow-auto max-h-24">
+                <p className="text-sm text-muted-foreground overflow-y-auto max-h-28 pr-2">
                   {candidate.front_text}
                 </p>
               </div>
@@ -64,10 +64,12 @@ export function FlashcardCandidateCard({
             </div>
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="flex-grow pt-0">
             <div className="space-y-1">
               <h3 className="text-lg font-medium">Back</h3>
-              <p className="text-sm text-muted-foreground line-clamp-4 overflow-auto max-h-24">{candidate.back_text}</p>
+              <p className="text-sm text-muted-foreground overflow-y-auto max-h-28 pr-2">
+                {candidate.back_text}
+              </p>
             </div>
           </CardContent>
 

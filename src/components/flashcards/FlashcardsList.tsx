@@ -1,12 +1,20 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { FlashcardDTO, GetFlashcardsResponseDTO } from "@/types";
 import type { User } from "@supabase/supabase-js";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, LogIn, PlusCircle } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { EditFlashcardForm } from "./EditFlashcardForm";
 
 interface FlashcardsListProps {
   initialUser?: Pick<User, "id" | "email">;
@@ -15,6 +23,7 @@ interface FlashcardsListProps {
 export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
+  const queryClient = useQueryClient();
 
   const isDemo = !initialUser?.id;
 
@@ -36,6 +45,80 @@ export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
       return failureCount < 2;
     },
   });
+
+  const handleEdit = async (flashcard: FlashcardDTO, updateData: { front_text: string; back_text: string }) => {
+    try {
+      const response = await fetch(`/api/flashcards/${flashcard.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updateData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update flashcard");
+      }
+
+      // Invalidate and refetch flashcards
+      queryClient.invalidateQueries({ queryKey: ["flashcards"] });
+      return Promise.resolve();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update flashcard";
+      console.error(errorMessage);
+      return Promise.reject(error);
+    }
+  };
+
+  const handleHide = async (flashcard: FlashcardDTO) => {
+    try {
+      const response = await fetch(`/api/flashcards/${flashcard.id}/hide`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ hidden: true }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to hide flashcard");
+      }
+
+      // Invalidate and refetch flashcards
+      queryClient.invalidateQueries({ queryKey: ["flashcards"] });
+      toast.success("Flashcard hidden successfully");
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to hide flashcard";
+      toast.error("Error", {
+        description: "Failed to hide flashcard. Please try again.",
+      });
+      console.error(errorMessage);
+    }
+  };
+
+  const handleDelete = async (flashcard: FlashcardDTO) => {
+    try {
+      const response = await fetch(`/api/flashcards/${flashcard.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete flashcard");
+      }
+
+      // Invalidate and refetch flashcards
+      queryClient.invalidateQueries({ queryKey: ["flashcards"] });
+      toast.success("Flashcard deleted successfully");
+      return Promise.resolve();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete flashcard";
+      toast.error("Error", {
+        description: "Failed to delete flashcard. Please try again.",
+      });
+      console.error(errorMessage);
+      return Promise.reject(error);
+    }
+  };
 
   // Check if user is in demo mode
   if (isDemo) {
@@ -109,7 +192,7 @@ export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
         <Button asChild className="gap-2">
           <a href="/manual">
             <PlusCircle className="h-4 w-4" />
-            Create New
+            New
           </a>
         </Button>
       </div>
@@ -121,7 +204,15 @@ export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
       ) : (
         <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
-            {data?.flashcards.map((flashcard) => <FlashcardItem key={flashcard.id} flashcard={flashcard} />)}
+            {data?.flashcards.map((flashcard) => (
+              <FlashcardItem 
+                key={flashcard.id} 
+                flashcard={flashcard} 
+                onEdit={(updateData) => handleEdit(flashcard, updateData)}
+                onHide={() => handleHide(flashcard)}
+                onDelete={() => handleDelete(flashcard)}
+              />
+            ))}
           </div>
 
           {data && data.pagination.total > limit && (
@@ -144,8 +235,19 @@ export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
   );
 }
 
-function FlashcardItem({ flashcard }: { flashcard: FlashcardDTO }) {
+interface FlashcardItemProps {
+  flashcard: FlashcardDTO;
+  onEdit: (updateData: { front_text: string; back_text: string }) => Promise<void>;
+  onHide: () => void;
+  onDelete: () => void;
+}
+
+function FlashcardItem({ flashcard, onEdit, onHide, onDelete }: FlashcardItemProps) {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [contextMenuOpen, setContextMenuOpen] = useState(false);
+  const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -154,30 +256,133 @@ function FlashcardItem({ flashcard }: { flashcard: FlashcardDTO }) {
     }
   };
 
-  return (
-    <div
-      className="flashcard-container relative w-full aspect-[4/3] cursor-pointer"
-      onClick={() => setIsFlipped(!isFlipped)}
-      onKeyDown={handleKeyDown}
-      tabIndex={0}
-      role="button"
-      aria-label={`Flashcard: ${flashcard.front_text}`}
-    >
-      <div className={`flashcard absolute inset-0 w-full h-full ${isFlipped ? "flipped" : ""}`}>
-        {/* Front side */}
-        <Card className="flashcard-front absolute inset-0 w-full h-full">
-          <CardContent className="p-6 h-full flex items-center justify-center">
-            <div className="text-center font-medium">{flashcard.front_text}</div>
-          </CardContent>
-        </Card>
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenuPosition({ x: e.clientX, y: e.clientY });
+    setContextMenuOpen(true);
+    return false;
+  };
 
-        {/* Back side */}
-        <Card className="flashcard-back absolute inset-0 w-full h-full">
-          <CardContent className="p-6 h-full flex items-center justify-center">
-            <div className="text-center">{flashcard.back_text}</div>
-          </CardContent>
-        </Card>
+  // Function to manually toggle the flip state
+  const toggleFlip = () => {
+    if (!isEditing) {
+      setIsFlipped(!isFlipped);
+    }
+  };
+
+  // Handler for delete with loading state
+  const handleDeleteWithState = async () => {
+    setIsDeleting(true);
+    try {
+      await onDelete();
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Handler for starting edit mode
+  const handleStartEdit = () => {
+    setContextMenuOpen(false);
+    setIsEditing(true);
+  };
+
+  // Handler for saving edits
+  const handleSaveEdit = async (updateData: { front_text: string; back_text: string }) => {
+    try {
+      await onEdit(updateData);
+      setIsEditing(false);
+      toast.success("Flashcard updated successfully");
+    } catch (error) {
+      toast.error("Failed to update flashcard");
+    }
+  };
+
+  // Handler for canceling edit mode
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+  };
+
+  return (
+    <div className="relative">
+      {/* Regular card that flips on click */}
+      <div
+        className={`flashcard-container relative w-full ${isEditing ? 'h-[400px]' : 'aspect-[4/3]'} ${isEditing ? '' : 'cursor-pointer'}`}
+        onClick={isEditing ? undefined : toggleFlip}
+        onKeyDown={isEditing ? undefined : handleKeyDown}
+        onContextMenu={handleContextMenu}
+        tabIndex={0}
+        role="button"
+        aria-label={`Flashcard: ${flashcard.front_text}`}
+      >
+        {isEditing ? (
+          <Card className="w-full h-full" onClick={(e) => e.stopPropagation()}>
+            <EditFlashcardForm
+              flashcard={flashcard}
+              onSave={handleSaveEdit}
+              onCancel={handleCancelEdit}
+            />
+          </Card>
+        ) : (
+          <div className={`flashcard absolute inset-0 w-full h-full ${isFlipped ? "flipped" : ""}`}>
+            {/* Front side */}
+            <Card className="flashcard-front absolute inset-0 w-full h-full">
+              <CardContent className="p-6 h-full flex flex-col justify-between">
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-center font-medium">{flashcard.front_text}</div>
+                </div>
+                {flashcard.is_ai && (
+                  <div className="flex justify-end mt-2">
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">AI Generated</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Back side */}
+            <Card className="flashcard-back absolute inset-0 w-full h-full">
+              <CardContent className="p-6 h-full flex flex-col justify-between">
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-center">{flashcard.back_text}</div>
+                </div>
+                {flashcard.is_ai && (
+                  <div className="flex justify-end mt-2">
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">AI Generated</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
+      
+      {/* Context menu dropdown that only shows when contextMenuOpen is true */}
+      <DropdownMenu open={contextMenuOpen} onOpenChange={setContextMenuOpen}>
+        <DropdownMenuTrigger className="hidden" />
+        <DropdownMenuContent 
+          style={{ 
+            position: 'fixed', 
+            left: `${contextMenuPosition.x}px`, 
+            top: `${contextMenuPosition.y}px` 
+          }}
+          sideOffset={0}
+          alignOffset={0}
+          avoidCollisions={false}
+        >
+          <DropdownMenuItem onClick={handleStartEdit}>
+            Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onHide}>
+            Hide
+          </DropdownMenuItem>
+          <DropdownMenuItem 
+            onClick={handleDeleteWithState}
+            className="text-red-600 focus:text-red-600"
+            disabled={isDeleting}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

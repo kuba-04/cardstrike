@@ -34,7 +34,7 @@ export function CandidateReviewArea({
   const rejectedCount = candidates.filter((c) => c.local_status === "rejected").length;
 
   return (
-    <div className="space-y-6" data-testid="candidate-review-area">
+    <div className="space-y-8" data-testid="candidate-review-area">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h2 className="text-2xl font-semibold tracking-tight">Review Generated Flashcards</h2>
@@ -61,7 +61,7 @@ export function CandidateReviewArea({
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
         {candidates.map((candidate) => (
           <FlashcardCandidateCard
             key={candidate.candidate_id}
