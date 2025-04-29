@@ -88,12 +88,14 @@ export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
       // Invalidate and refetch flashcards
       queryClient.invalidateQueries({ queryKey: ["flashcards"] });
       toast.success("Flashcard deleted successfully");
+      return Promise.resolve();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to delete flashcard";
       toast.error("Error", {
         description: "Failed to delete flashcard. Please try again.",
       });
       console.error(errorMessage);
+      return Promise.reject(error);
     }
   };
 
@@ -223,6 +225,7 @@ function FlashcardItem({ flashcard, onEdit, onHide, onDelete }: FlashcardItemPro
   const [isFlipped, setIsFlipped] = useState(false);
   const [contextMenuOpen, setContextMenuOpen] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -243,6 +246,16 @@ function FlashcardItem({ flashcard, onEdit, onHide, onDelete }: FlashcardItemPro
     setIsFlipped(!isFlipped);
   };
 
+  // Handler for delete with loading state
+  const handleDeleteWithState = async () => {
+    setIsDeleting(true);
+    try {
+      await onDelete();
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="relative">
       {/* Regular card that flips on click */}
@@ -258,15 +271,29 @@ function FlashcardItem({ flashcard, onEdit, onHide, onDelete }: FlashcardItemPro
         <div className={`flashcard absolute inset-0 w-full h-full ${isFlipped ? "flipped" : ""}`}>
           {/* Front side */}
           <Card className="flashcard-front absolute inset-0 w-full h-full">
-            <CardContent className="p-6 h-full flex items-center justify-center">
-              <div className="text-center font-medium">{flashcard.front_text}</div>
+            <CardContent className="p-6 h-full flex flex-col justify-between">
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center font-medium">{flashcard.front_text}</div>
+              </div>
+              {flashcard.is_ai && (
+                <div className="flex justify-end mt-2">
+                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">AI Generated</span>
+                </div>
+              )}
             </CardContent>
           </Card>
 
           {/* Back side */}
           <Card className="flashcard-back absolute inset-0 w-full h-full">
-            <CardContent className="p-6 h-full flex items-center justify-center">
-              <div className="text-center">{flashcard.back_text}</div>
+            <CardContent className="p-6 h-full flex flex-col justify-between">
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">{flashcard.back_text}</div>
+              </div>
+              {flashcard.is_ai && (
+                <div className="flex justify-end mt-2">
+                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">AI Generated</span>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -292,10 +319,11 @@ function FlashcardItem({ flashcard, onEdit, onHide, onDelete }: FlashcardItemPro
             Hide
           </DropdownMenuItem>
           <DropdownMenuItem 
-            onClick={onDelete}
+            onClick={handleDeleteWithState}
             className="text-red-600 focus:text-red-600"
+            disabled={isDeleting}
           >
-            Delete
+            {isDeleting ? "Deleting..." : "Delete"}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

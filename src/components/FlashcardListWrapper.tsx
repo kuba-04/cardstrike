@@ -1,7 +1,7 @@
 import type { User } from "@supabase/supabase-js";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
-import FlashcardList from "./FlashcardList";
+import { FlashcardsList } from "./flashcards/FlashcardsList";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -21,7 +21,7 @@ interface FlashcardListWrapperProps {
 export default function FlashcardListWrapper({ initialUser }: FlashcardListWrapperProps) {
   return (
     <QueryClientProvider client={queryClient}>
-      <FlashcardList initialUser={initialUser} />
+      <FlashcardsList initialUser={initialUser} />
       <Toaster richColors position="top-right" />
     </QueryClientProvider>
   );
