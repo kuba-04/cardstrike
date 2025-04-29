@@ -5,6 +5,7 @@ import { useAuth } from "./providers/AuthProvider";
 import { LoadingIndicator } from "./ui/loading-indicator";
 import { Library, FileEdit } from "lucide-react";
 import type { Panel } from "./ThreePanelLayout";
+import { cn } from "@/lib/utils";
 
 interface NavbarProps {
   activePanel?: Panel;
@@ -26,6 +27,17 @@ export function Navbar({ activePanel, onPanelChange, variant = "default" }: Navb
     }
   };
 
+  const handleCollectionsClick = () => {
+    if (!user) {
+      toast.warning("Please log in", {
+        description: "You need to be logged in to view your collections."
+      });
+      return;
+    }
+    
+    onPanelChange?.("collections");
+  };
+
   return (
     <nav
       className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
@@ -43,8 +55,13 @@ export function Navbar({ activePanel, onPanelChange, variant = "default" }: Navb
             <div className="hidden md:flex items-center gap-4">
               <Button
                 variant="ghost"
-                className={`flex items-center gap-2 ${activePanel === "collections" ? "text-primary" : "text-muted-foreground"}`}
-                onClick={() => onPanelChange("collections")}
+                className={cn(
+                  "flex items-center gap-2",
+                  activePanel === "collections" ? "text-primary" : "text-muted-foreground",
+                  !user && "opacity-50"
+                )}
+                onClick={handleCollectionsClick}
+                aria-disabled={!user} 
               >
                 <Library className="h-4 w-4" />
                 <span>My Collections</span>
