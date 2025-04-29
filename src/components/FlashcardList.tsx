@@ -1,8 +1,8 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import type { GetFlashcardsResponseDTO } from "../types";
+import type { FlashcardDTO, GetFlashcardsResponseDTO } from "../types";
 import FlashcardCard from "./FlashcardCard";
 
 const ITEMS_PER_PAGE = 10;
@@ -10,7 +10,23 @@ const ITEMS_PER_PAGE = 10;
 // No props needed, so we can export directly without an interface
 export default function FlashcardList() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [editingFlashcard, setEditingFlashcard] = useState<FlashcardDTO | null>(null);
   const queryClient = useQueryClient();
+
+  // Debug: Global context menu detection
+  useEffect(() => {
+    const debugContextMenu = (e: MouseEvent) => {
+      if (e.button === 2) { // Right click
+        console.log("RIGHT CLICK DETECTED AT LIST LEVEL", { x: e.clientX, y: e.clientY });
+      }
+    };
+    
+    document.addEventListener('mousedown', debugContextMenu);
+    
+    return () => {
+      document.removeEventListener('mousedown', debugContextMenu);
+    };
+  }, []);
 
   const { data, isLoading, isError, error } = useQuery<GetFlashcardsResponseDTO>({
     queryKey: ["flashcards", currentPage],
@@ -23,6 +39,38 @@ export default function FlashcardList() {
       return response.json();
     },
   });
+
+  const handleEdit = async (flashcard: FlashcardDTO) => {
+    setEditingFlashcard(flashcard);
+    // TODO: Open edit modal or navigate to edit page
+    toast.info("Edit functionality coming soon!");
+  };
+
+  const handleHide = async (flashcard: FlashcardDTO) => {
+    try {
+      const response = await fetch(`/api/flashcards/${flashcard.id}/hide`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ hidden: true }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to hide flashcard");
+      }
+
+      // Invalidate and refetch flashcards
+      queryClient.invalidateQueries({ queryKey: ["flashcards"] });
+      toast.success("Flashcard hidden successfully");
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to hide flashcard";
+      toast.error("Error", {
+        description: "Failed to hide flashcard. Please try again.",
+      });
+      console.error(errorMessage);
+    }
+  };
 
   if (isError) {
     console.error("Error fetching flashcards:", error);
@@ -60,8 +108,15 @@ export default function FlashcardList() {
     );
   }
 
+  const handleRightClick = (e: React.MouseEvent) => {
+    console.log("RIGHT CLICK ON LIST CONTAINER");
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" onContextMenu={handleRightClick}>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {flashcards.map((flashcard) => (
           <FlashcardCard
@@ -71,6 +126,8 @@ export default function FlashcardList() {
               // Invalidate and refetch flashcards
               queryClient.invalidateQueries({ queryKey: ["flashcards"] });
             }}
+            onEdit={handleEdit}
+            onHide={handleHide}
           />
         ))}
       </div>
