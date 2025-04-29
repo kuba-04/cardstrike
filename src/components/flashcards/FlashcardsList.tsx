@@ -109,7 +109,7 @@ export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
         <Button asChild className="gap-2">
           <a href="/manual">
             <PlusCircle className="h-4 w-4" />
-            Create New
+            New
           </a>
         </Button>
       </div>

@@ -80,7 +80,7 @@ export function FlashcardGenerationView() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-3xl mx-auto px-4 py-8">
       {isDemo && (
         <Alert className="bg-blue-50 border-blue-200">
           <AlertCircle className="h-4 w-4 text-blue-600" />
@@ -90,6 +90,13 @@ export function FlashcardGenerationView() {
           </AlertDescription>
         </Alert>
       )}
+
+      <div className="space-y-4">
+        <h2 className="text-2xl font-semibold tracking-tight">Generate Flashcards</h2>
+        <p className="text-muted-foreground">
+          Paste your text below and we'll generate flashcards for you. The text should be between 100 and 10,000 characters.
+        </p>
+      </div>
 
       <TextInputArea
         value={sourceText}

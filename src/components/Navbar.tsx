@@ -32,8 +32,8 @@ export function Navbar({ activePanel, onPanelChange, variant = "default" }: Navb
       role="navigation"
       aria-label="Main navigation"
     >
-      <div className="container flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-4">
+      <div className="flex h-16 items-center px-4">
+        <div className="flex flex-1 items-center gap-4">
           <Link href="/" className="text-xl font-bold">
             CardStrike
           </Link>
@@ -61,7 +61,7 @@ export function Navbar({ activePanel, onPanelChange, variant = "default" }: Navb
           )}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center">
           {loading ? (
             <LoadingIndicator />
           ) : user ? (
