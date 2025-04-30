@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { cn } from "@/lib/utils";
 
-export type Panel = "collections" | "builder";
+export type Panel = "collections" | "builder" | "learn";
 
 interface PanelProps {
   children: ReactNode;
@@ -20,6 +20,7 @@ const PanelView = ({ children, className, id }: PanelProps) => (
 interface ThreePanelLayoutProps {
   collectionsPanel: ReactNode;
   builderPanel: ReactNode;
+  learnPanel: ReactNode;
   defaultPanel?: Panel;
   onPanelChange?: (panel: Panel) => void;
   className?: string;
@@ -28,6 +29,7 @@ interface ThreePanelLayoutProps {
 export function ThreePanelLayout({
   collectionsPanel,
   builderPanel,
+  learnPanel,
   defaultPanel = "builder",
   onPanelChange,
   className,
@@ -93,6 +95,12 @@ export function ThreePanelLayout({
           >
             {builderPanel}
           </PanelView>
+          <PanelView
+            id="learn-panel"
+            className={cn("w-full transition-opacity duration-300", activePanel === "learn" ? "block" : "hidden")}
+          >
+            {learnPanel}
+          </PanelView>
         </div>
       )}
 
@@ -118,6 +126,15 @@ export function ThreePanelLayout({
             )}
           >
             {builderPanel}
+          </PanelView>
+          <PanelView
+            id="learn-panel-mobile"
+            className={cn(
+              "w-full transition-opacity duration-300",
+              activePanel === "learn" ? "block panel-enter-active" : "hidden panel-exit-active"
+            )}
+          >
+            {learnPanel}
           </PanelView>
         </div>
       )}
