@@ -79,7 +79,7 @@ export function EditFlashcardForm({ flashcard, onSave, onCancel }: EditFlashcard
               Saving...
             </>
           ) : (
-            "Save Changes"
+            "Save"
           )}
         </Button>
       </CardFooter>

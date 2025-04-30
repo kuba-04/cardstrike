@@ -12,7 +12,7 @@ import type { FlashcardDTO, GetFlashcardsResponseDTO } from "@/types";
 import type { User } from "@supabase/supabase-js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, LogIn, PlusCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { EditFlashcardForm } from "./EditFlashcardForm";
 
@@ -203,7 +203,7 @@ export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
         </div>
       ) : (
         <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
+          <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 mb-8">
             {data?.flashcards.map((flashcard) => (
               <FlashcardItem 
                 key={flashcard.id} 
@@ -258,8 +258,25 @@ function FlashcardItem({ flashcard, onEdit, onHide, onDelete }: FlashcardItemPro
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
-    setContextMenuPosition({ x: e.clientX, y: e.clientY });
+    
+    // Instead of using a dropdown menu, let's use a simple fixed position div
+    const x = e.clientX;
+    const y = e.clientY;
+    
+    setContextMenuPosition({ x, y });
     setContextMenuOpen(true);
+    
+    // Add a click event listener to close the menu when clicking outside
+    const handleClickOutside = () => {
+      setContextMenuOpen(false);
+      window.removeEventListener('click', handleClickOutside);
+    };
+    
+    // Use setTimeout to avoid immediate triggering of the click event
+    setTimeout(() => {
+      window.addEventListener('click', handleClickOutside);
+    }, 0);
+    
     return false;
   };
 
@@ -306,7 +323,7 @@ function FlashcardItem({ flashcard, onEdit, onHide, onDelete }: FlashcardItemPro
     <div className="relative">
       {/* Regular card that flips on click */}
       <div
-        className={`flashcard-container relative w-full ${isEditing ? 'h-[400px]' : 'aspect-[4/3]'} ${isEditing ? '' : 'cursor-pointer'}`}
+        className={`flashcard-container relative w-full sm:max-w-[250px] md:max-w-[280px] xl:max-w-[300px] mx-auto overflow-hidden ${isEditing ? 'h-[400px]' : 'aspect-[4/3]'} ${isEditing ? '' : 'cursor-pointer'}`}
         onClick={isEditing ? undefined : toggleFlip}
         onKeyDown={isEditing ? undefined : handleKeyDown}
         onContextMenu={handleContextMenu}
@@ -332,7 +349,20 @@ function FlashcardItem({ flashcard, onEdit, onHide, onDelete }: FlashcardItemPro
                 </div>
                 {flashcard.is_ai && (
                   <div className="flex justify-end mt-2">
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">AI Generated</span>
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded flex items-center gap-1">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M12 0L14.59 5.41L20 8L14.59 10.59L12 16L9.41 10.59L4 8L9.41 5.41L12 0Z" />
+                        <path d="M4 16L5.5 19.5L9 21L5.5 22.5L4 26L2.5 22.5L-1 21L2.5 19.5L4 16Z" />
+                        <path d="M20 12L21.5 15.5L25 17L21.5 18.5L20 22L18.5 18.5L15 17L18.5 15.5L20 12Z" />
+                      </svg>
+                      AI
+                    </span>
                   </div>
                 )}
               </CardContent>
@@ -346,7 +376,20 @@ function FlashcardItem({ flashcard, onEdit, onHide, onDelete }: FlashcardItemPro
                 </div>
                 {flashcard.is_ai && (
                   <div className="flex justify-end mt-2">
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">AI Generated</span>
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded flex items-center gap-1">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M12 0L14.59 5.41L20 8L14.59 10.59L12 16L9.41 10.59L4 8L9.41 5.41L12 0Z" />
+                        <path d="M4 16L5.5 19.5L9 21L5.5 22.5L4 26L2.5 22.5L-1 21L2.5 19.5L4 16Z" />
+                        <path d="M20 12L21.5 15.5L25 17L21.5 18.5L20 22L18.5 18.5L15 17L18.5 15.5L20 12Z" />
+                      </svg>
+                      AI
+                    </span>
                   </div>
                 )}
               </CardContent>
@@ -355,34 +398,46 @@ function FlashcardItem({ flashcard, onEdit, onHide, onDelete }: FlashcardItemPro
         )}
       </div>
       
-      {/* Context menu dropdown that only shows when contextMenuOpen is true */}
-      <DropdownMenu open={contextMenuOpen} onOpenChange={setContextMenuOpen}>
-        <DropdownMenuTrigger className="hidden" />
-        <DropdownMenuContent 
-          style={{ 
-            position: 'fixed', 
-            left: `${contextMenuPosition.x}px`, 
-            top: `${contextMenuPosition.y}px` 
+      {/* Replace dropdown with fixed position div */}
+      {contextMenuOpen && (
+        <div 
+          className="fixed bg-popover text-popover-foreground rounded-md shadow-md py-1 border border-border z-50"
+          style={{
+            left: `${contextMenuPosition.x}px`,
+            top: `${contextMenuPosition.y}px`,
+            minWidth: '150px'
           }}
-          sideOffset={0}
-          alignOffset={0}
-          avoidCollisions={false}
         >
-          <DropdownMenuItem onClick={handleStartEdit}>
+          <button 
+            className="w-full text-left px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleStartEdit();
+            }}
+          >
             Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={onHide}>
+          </button>
+          <button 
+            className="w-full text-left px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+            onClick={(e) => {
+              e.stopPropagation();
+              onHide();
+            }}
+          >
             Hide
-          </DropdownMenuItem>
-          <DropdownMenuItem 
-            onClick={handleDeleteWithState}
-            className="text-red-600 focus:text-red-600"
+          </button>
+          <button 
+            className="w-full text-left px-3 py-1.5 text-sm text-red-600 hover:bg-red-100 hover:text-red-700"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDeleteWithState();
+            }}
             disabled={isDeleting}
           >
             {isDeleting ? "Deleting..." : "Delete"}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
