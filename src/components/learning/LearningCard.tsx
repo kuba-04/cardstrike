@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 interface LearningCardProps {
   flashcard: FlashcardDTO;
-  onGrade: (id: number, grade: SuperMemoGrade) => Promise<void>;
+  onGrade: (id: string, grade: SuperMemoGrade) => Promise<void>;
   onNext: () => void;
   isLoading?: boolean;
 }
@@ -39,32 +39,56 @@ export function LearningCard({ flashcard, onGrade, onNext, isLoading = false }: 
       setIsGrading(false);
     }
   };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleFlip();
+    }
+  };
   
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardContent 
-        className={cn(
-          "p-6 min-h-[200px] flex items-center justify-center cursor-pointer transition-all duration-300",
-          (isGrading || isLoading) && "opacity-70 pointer-events-none"
-        )}
+    <div className="w-full max-w-md mx-auto">
+      <div 
+        className="flashcard-container relative w-full aspect-[4/3] cursor-pointer"
         onClick={handleFlip}
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+        role="button"
+        aria-label={`Flashcard: ${flashcard.front_text}`}
       >
-        <div className="text-xl text-center">
-          {isFlipped ? flashcard.back_text : flashcard.front_text}
+        <div className={`flashcard absolute inset-0 w-full h-full ${isFlipped ? "flipped" : ""}`}>
+          {/* Front side */}
+          <Card className="flashcard-front absolute inset-0 w-full h-full">
+            <CardContent className="p-6 h-full flex flex-col justify-between">
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center text-xl font-medium">{flashcard.front_text}</div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Back side */}
+          <Card className="flashcard-back absolute inset-0 w-full h-full">
+            <CardContent className="p-6 h-full flex flex-col justify-between">
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center text-xl">{flashcard.back_text}</div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </CardContent>
+      </div>
       
       {isFlipped && (
-        <CardFooter className="flex flex-wrap justify-center gap-2 p-4 border-t">
+        <div className="flex flex-wrap justify-center gap-2 p-4  mt-4">
           <GradeButton grade={0} onClick={handleGrade} disabled={isGrading || isLoading} title="Complete blackout" />
           <GradeButton grade={1} onClick={handleGrade} disabled={isGrading || isLoading} title="Incorrect; remembered" />
           <GradeButton grade={2} onClick={handleGrade} disabled={isGrading || isLoading} title="Incorrect; easy to recall" />
           <GradeButton grade={3} onClick={handleGrade} disabled={isGrading || isLoading} title="Correct; difficult" />
           <GradeButton grade={4} onClick={handleGrade} disabled={isGrading || isLoading} title="Correct; with hesitation" />
           <GradeButton grade={5} onClick={handleGrade} disabled={isGrading || isLoading} title="Perfect response" />
-        </CardFooter>
+        </div>
       )}
-    </Card>
+    </div>
   );
 }
 

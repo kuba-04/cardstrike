@@ -4,7 +4,7 @@ import { FlashcardsLearningService } from "../../../lib/services/flashcards-lear
 
 // Input validation schema
 const ReviewSchema = z.object({
-  id: z.number().int().positive(),
+  id: z.string().uuid(),
   grade: z.union([
     z.literal(0),
     z.literal(1),

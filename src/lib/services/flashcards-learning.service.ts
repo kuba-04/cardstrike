@@ -6,7 +6,7 @@ export class FlashcardsLearningService {
   constructor(private supabase: SupabaseClient) {}
 
   /**
-   * Transforms a database flashcard entity to a DTO
+   * Maps a database flashcard record to a FlashcardDTO
    */
   private mapFlashcardToDTO(flashcard: any): FlashcardDTO {
     return {
@@ -46,7 +46,7 @@ export class FlashcardsLearningService {
    */
   async recordFlashcardReview(
     userId: string,
-    flashcardId: number,
+    flashcardId: string,
     grade: SuperMemoGrade
   ): Promise<{ flashcard: FlashcardDTO }> {
     // 1. Fetch the current flashcard data

@@ -44,7 +44,7 @@ export function LearningView() {
     }
   };
   
-  const handleGrade = async (id: number, grade: SuperMemoGrade) => {
+  const handleGrade = async (id: string, grade: SuperMemoGrade) => {
     setReviewLoading(true);
     
     try {
@@ -160,11 +160,6 @@ export function LearningView() {
         isLoading={reviewLoading}
       />
       
-      <div className="mt-4 text-center">
-        <p className="text-sm text-muted-foreground">
-          Click the card to reveal the answer, then grade your response
-        </p>
-      </div>
     </div>
   );
 } 
