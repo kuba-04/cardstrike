@@ -1,4 +1,3 @@
-import { Providers } from "@/components/providers/Providers";
 import { FlashcardGenerationView } from "./FlashcardGenerationView";
 import type { User } from "@supabase/supabase-js";
 import { ThreePanelLayout } from "./ThreePanelLayout";
@@ -6,6 +5,8 @@ import { useState, useEffect } from "react";
 import { FlashcardsList } from "./flashcards/FlashcardsList";
 import { Navbar } from "./Navbar";
 import type { Panel } from "./ThreePanelLayout";
+import { LearningView } from "./learning/LearningView";
+import { Providers } from "./providers/Providers";
 
 interface FlashcardGenerationViewWrapperProps {
   initialUser: Pick<User, "id" | "email">;
@@ -17,7 +18,7 @@ export function FlashcardGenerationViewWrapper({ initialUser }: FlashcardGenerat
     // Get the panel from URL parameter, default to 'builder' if not specified
     const params = new URLSearchParams(window.location.search);
     const panel = params.get("panel");
-    return panel === "collections" || panel === "builder" ? panel : "builder";
+    return (panel === "collections" || panel === "builder" || panel === "learn") ? panel as Panel : "builder";
   });
 
   // Initialize mounted state
@@ -45,6 +46,13 @@ export function FlashcardGenerationViewWrapper({ initialUser }: FlashcardGenerat
       <FlashcardGenerationView />
     </div>
   );
+  
+  // Learning panel content
+  const renderLearningPanel = () => (
+    <div className="h-full overflow-y-auto">
+      <LearningView />
+    </div>
+  );
 
   if (!mounted) return null;
 
@@ -56,6 +64,7 @@ export function FlashcardGenerationViewWrapper({ initialUser }: FlashcardGenerat
           <ThreePanelLayout
             collectionsPanel={renderCollectionsPanel()}
             builderPanel={renderBuilderPanel()}
+            learnPanel={renderLearningPanel()}
             defaultPanel={activePanel}
             onPanelChange={setActivePanel}
           />

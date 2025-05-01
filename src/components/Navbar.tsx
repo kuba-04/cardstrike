@@ -3,7 +3,7 @@ import { Link } from "@/components/ui/link";
 import { toast } from "sonner";
 import { useAuth } from "./providers/AuthProvider";
 import { LoadingIndicator } from "./ui/loading-indicator";
-import { Library, FileEdit } from "lucide-react";
+import { Library, FileEdit, Brain } from "lucide-react";
 import type { Panel } from "./ThreePanelLayout";
 import { cn } from "@/lib/utils";
 
@@ -73,6 +73,27 @@ export function Navbar({ activePanel, onPanelChange, variant = "default" }: Navb
               >
                 <FileEdit className="h-4 w-4" />
                 <span>Builder</span>
+              </Button>
+              <Button
+                variant="ghost"
+                className={cn(
+                  "flex items-center gap-2",
+                  activePanel === "learn" ? "text-primary" : "text-muted-foreground",
+                  !user && "opacity-50"
+                )}
+                onClick={() => {
+                  if (!user) {
+                    toast.warning("Please log in", {
+                      description: "You need to be logged in to start learning."
+                    });
+                    return;
+                  }
+                  onPanelChange("learn");
+                }}
+                aria-disabled={!user}
+              >
+                <Brain className="h-4 w-4" />
+                <span>Learn</span>
               </Button>
             </div>
           )}

@@ -27,8 +27,8 @@ export interface Database {
           created_by: Database["public"]["Enums"]["flashcard_origin"];
           ease_factor: number | null;
           front_content: string;
-          generation_id: number | null;
-          id: number;
+          generation_id: string | null;
+          id: string;
           interval: number | null;
           last_review_at: string | null;
           next_review_at: string | null;
@@ -42,8 +42,8 @@ export interface Database {
           created_by: Database["public"]["Enums"]["flashcard_origin"];
           ease_factor?: number | null;
           front_content: string;
-          generation_id?: number | null;
-          id?: number;
+          generation_id?: string | null;
+          id?: string;
           interval?: number | null;
           last_review_at?: string | null;
           next_review_at?: string | null;
@@ -57,8 +57,8 @@ export interface Database {
           created_by?: Database["public"]["Enums"]["flashcard_origin"];
           ease_factor?: number | null;
           front_content?: string;
-          generation_id?: number | null;
-          id?: number;
+          generation_id?: string | null;
+          id?: string;
           interval?: number | null;
           last_review_at?: string | null;
           next_review_at?: string | null;

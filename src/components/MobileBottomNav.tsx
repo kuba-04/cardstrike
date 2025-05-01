@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Library, FileEdit } from "lucide-react";
+import { Library, FileEdit, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Panel } from "./ThreePanelLayout";
 import { useAuth } from "./providers/AuthProvider";
@@ -34,7 +34,7 @@ export function MobileBottomNav({ activePanel, onPanelChange }: MobileBottomNavP
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-border bg-background mobile-bottom-nav">
-      <div className="grid grid-cols-2 h-16">
+      <div className="grid grid-cols-3 h-16">
         <button
           className={cn(
             "flex flex-col items-center justify-center gap-1 p-2 transition-colors",
@@ -61,6 +61,19 @@ export function MobileBottomNav({ activePanel, onPanelChange }: MobileBottomNavP
         >
           <FileEdit className="h-5 w-5" />
           <span className="text-xs">Builder</span>
+        </button>
+        
+        <button
+          className={cn(
+            "flex flex-col items-center justify-center gap-1 p-2 transition-colors",
+            activePanel === "learn" ? "text-primary" : "text-muted-foreground"
+          )}
+          onClick={() => onPanelChange("learn")}
+          aria-label="Learn"
+          aria-current={activePanel === "learn" ? "page" : undefined}
+        >
+          <Brain className="h-5 w-5" />
+          <span className="text-xs">Learn</span>
         </button>
       </div>
     </div>

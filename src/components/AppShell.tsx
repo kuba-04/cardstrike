@@ -12,7 +12,7 @@ export function AppShell({ children, initialUser, hideNav = false }: AppShellPro
   return (
     <Providers initialUser={initialUser}>
       <div className="flex min-h-screen flex-col">
-        {!hideNav && <Navbar />}
+        {!hideNav && <Navbar variant="default" />}
         <main className="flex-1">{children}</main>
       </div>
     </Providers>
