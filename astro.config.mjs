@@ -17,6 +17,9 @@ export default defineConfig({
   server: { port: 3001 },
   vite: {
     plugins: [tailwindcss()],
+    define: {
+      "process.env":process.env
+    },
   },
   adapter: cloudflare({
     platformProxy: { enabled: false }
