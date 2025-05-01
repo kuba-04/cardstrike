@@ -1,0 +1,79 @@
+name: Build and Deploy to Cloudflare Pages
+
+on:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run linter
+        run: npm run lint:fix
+
+  unit-test:
+    name: Unit Tests
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Vitest unit tests with coverage
+        run: npm run test:coverage
+      - name: Upload unit test coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-coverage
+          path: coverage/
+          retention-days: 14
+
+  build-and-deploy:
+    name: Build and Deploy to Cloudflare Pages
+    needs: unit-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    environment: production
+    env:
+      PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+      PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      OPENROUTER_HTTP_REFERER: ${{ secrets.OPENROUTER_HTTP_REFERER }}
+      OPENROUTER_MODEL_NAME: ${{ secrets.OPENROUTER_MODEL_NAME || 'qwen/qwq-32b:free' }}
+      OPENROUTER_API_URL: ${{ secrets.OPENROUTER_API_URL || 'https://openrouter.ai/api/v1/chat/completions' }}
+      OPENROUTER_DEFAULT_SYSTEM_MESSAGE: ${{ secrets.OPENROUTER_DEFAULT_SYSTEM_MESSAGE || 'You are a helpful assistant that can answer questions and help with tasks.' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Build for production
+        run: npm run build
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=cardstrike --commit-dirty=true
+          wranglerVersion: "3.0.0"

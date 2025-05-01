@@ -8,6 +8,7 @@ A web-based flashcard application designed to facilitate efficient learning thro
 - [Tech Stack](#tech-stack)
 - [Getting Started Locally](#getting-started-locally)
 - [Available Scripts](#available-scripts)
+- [Deployment](#deployment)
 - [Project Scope](#project-scope)
 - [Project Status](#project-status)
 - [License](#license)
@@ -48,7 +49,8 @@ CardStrike Flashcards is designed to streamline the process of creating and mana
 
 **CI/CD:**
 
-- DigitalOcean (Hosting via Docker)
+- GitHub Actions (CI/CD pipeline)
+- Cloudflare Pages (Hosting)
 
 ## Getting Started Locally
 
@@ -75,6 +77,31 @@ CardStrike Flashcards is designed to streamline the process of creating and mana
 - `npm run test` - Runs unit and integration tests with Vitest.
 - `npm run test:e2e` - Runs end-to-end tests with Playwright.
 - `npm run test:coverage` - Runs tests with coverage reporting.
+
+## Deployment
+
+The application is deployed automatically to Cloudflare Pages when changes are pushed to the `master` branch. The deployment process includes:
+
+1. Running linting checks
+2. Executing unit tests
+3. Building the application
+4. Deploying to Cloudflare Pages
+
+For detailed setup instructions, see [Cloudflare Pages Deployment Setup](.github/CLOUDFLARE_SETUP.md).
+
+### Environment Variables
+
+The following environment variables need to be configured in your Cloudflare Pages project:
+
+- `PUBLIC_SUPABASE_URL` - Your Supabase public URL
+- `PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+- `SUPABASE_URL` - Your Supabase URL (server-side)
+- `SUPABASE_KEY` - Your Supabase service key (server-side)
+- `OPENROUTER_API_KEY` - Your OpenRouter API key
+- `OPENROUTER_HTTP_REFERER` - Your HTTP referer for OpenRouter
+- `OPENROUTER_MODEL_NAME` - The AI model to use (optional)
+- `OPENROUTER_API_URL` - The OpenRouter API URL (optional)
+- `OPENROUTER_DEFAULT_SYSTEM_MESSAGE` - Default system message for AI (optional)
 
 ## Project Scope
 
