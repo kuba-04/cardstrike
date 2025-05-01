@@ -1,10 +1,9 @@
 # CardStrike Flashcards
 
-A web-based flashcard application designed to facilitate efficient learning through spaced repetition. CardStrike Flashcards leverages AI to generate flashcard pairs automatically from user-provided plain text, while also supporting manual creation and comprehensive flashcard management. It offers user registration, authentication, secure data storage, and a learning session view powered by a spaced repetition algorithm.
+A web-based flashcard application designed to facilitate efficient learning through spaced repetition. CardStrike Flashcards leverages AI to generate flashcard pairs automatically from user-provided plain text, while also supporting manual creation and comprehensive flashcard management. It offers user authentication, secure data storage, and a learning session view powered by a spaced repetition algorithm.
 
 ## Table of Contents
 
-- [Project Name](#project-name)
 - [Project Description](#project-description)
 - [Tech Stack](#tech-stack)
 - [Getting Started Locally](#getting-started-locally)
@@ -46,11 +45,9 @@ CardStrike Flashcards is designed to streamline the process of creating and mana
 
 - Vitest with React Testing Library (unit/integration testing)
 - Playwright (end-to-end testing)
-- MSW (API mocking)
 
-**CI/CD & Hosting:**
+**CI/CD:**
 
-- GitHub Actions (CI/CD pipelines)
 - DigitalOcean (Hosting via Docker)
 
 ## Getting Started Locally
@@ -88,8 +85,6 @@ The scope of CardStrike Flashcards includes:
 - **Flashcard Management:** Comprehensive view, edit, and delete capabilities for all flashcards.
 - **User Account System:** Secure registration, login, and password recovery functionalities.
 - **Spaced Repetition Integration:** Learn efficiently with flashcards scheduled according to a repetition algorithm.
-
-_Note: The MVP excludes advanced repetition algorithms, sharing functionality, and mobile app support._
 
 ## Project Status
 
