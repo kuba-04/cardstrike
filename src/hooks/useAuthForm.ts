@@ -3,6 +3,7 @@ import { useForm, type FieldValues, type UseFormReturn, type SubmitHandler } fro
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type z } from "zod";
 import { toast } from "sonner";
+import { ErrorService } from "@/lib/services/error.service";
 
 interface UseAuthFormOptions<T extends FieldValues> {
   schema: z.ZodSchema<T>;
@@ -31,9 +32,9 @@ export function useAuthForm<T extends FieldValues>({ schema, onSubmit }: UseAuth
       setIsSubmitting(true);
       await form.handleSubmit(onSubmit)();
     } catch (err) {
-      const message = err instanceof Error ? err.message : "An unexpected error occurred";
-      setError(message);
-      toast.error(message);
+      const sanitizedMessage = ErrorService.formatError(err);
+      setError(sanitizedMessage);
+      toast.error(sanitizedMessage);
     } finally {
       setIsSubmitting(false);
     }

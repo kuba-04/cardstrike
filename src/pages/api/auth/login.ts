@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { createSupabaseServerClient } from "../../../db/supabase.client";
 import { UserService } from "../../../lib/services/user.service";
+import { ErrorService, ErrorType } from "../../../lib/services/error.service";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -20,13 +21,18 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
+      console.error("Login auth error:", error);
+      return new Response(JSON.stringify({ 
+        error: ErrorService.getUserFriendlyMessage(ErrorType.AUTHENTICATION)
+      }), {
         status: 400,
       });
     }
 
     if (!data.user) {
-      return new Response(JSON.stringify({ error: "Failed to authenticate user" }), {
+      return new Response(JSON.stringify({ 
+        error: ErrorService.getUserFriendlyMessage(ErrorType.AUTHENTICATION)
+      }), {
         status: 400,
       });
     }
@@ -39,9 +45,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       status: 200,
     });
   } catch (error) {
+    console.error("Login error:", error);
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : "An unexpected error occurred",
+        error: ErrorService.formatError(error)
       }),
       { status: 500 }
     );

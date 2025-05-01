@@ -1,22 +1,28 @@
 import type { LoginFormData, RegisterFormData, ResetPasswordFormData } from "../schemas/auth.schema";
+import { ErrorService } from "./error.service";
 
 // Convert class with static methods to a function/object structure
 const fetchApi = async (endpoint: string, data: unknown) => {
-  const response = await fetch(`/api/auth/${endpoint}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
+  try {
+    const response = await fetch(`/api/auth/${endpoint}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
 
-  const responseData = await response.json();
+    const responseData = await response.json();
 
-  if (!response.ok) {
-    throw new Error(responseData.error || "An unexpected error occurred");
+    if (!response.ok) {
+      throw new Error(responseData.error || "An unexpected error occurred");
+    }
+
+    return responseData;
+  } catch (error) {
+    console.error(`Auth ${endpoint} error:`, error);
+    throw new Error(ErrorService.formatError(error));
   }
-
-  return responseData;
 };
 
 export const AuthService = {

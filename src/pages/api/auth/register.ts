@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { createSupabaseServerClient } from "../../../db/supabase.client";
 import { UserService } from "../../../lib/services/user.service";
+import { ErrorService, ErrorType } from "../../../lib/services/error.service";
 import { z } from "zod";
 
 const registerSchema = z.object({
@@ -33,13 +34,22 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
+      console.error("Supabase auth error:", error);
+      const errorType = error.message.includes("already") ? 
+        ErrorType.VALIDATION : 
+        ErrorType.AUTHENTICATION;
+      
+      return new Response(JSON.stringify({ 
+        error: ErrorService.getUserFriendlyMessage(errorType)
+      }), {
         status: 400,
       });
     }
 
     if (!data.user) {
-      return new Response(JSON.stringify({ error: "Failed to create user" }), {
+      return new Response(JSON.stringify({ 
+        error: ErrorService.getUserFriendlyMessage(ErrorType.AUTHENTICATION)
+      }), {
         status: 400,
       });
     }
@@ -52,9 +62,21 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       status: 200,
     });
   } catch (error) {
+    console.error("Registration error:", error);
+    
+    // Handle validation errors from zod
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({
+          error: ErrorService.getUserFriendlyMessage(ErrorType.VALIDATION)
+        }),
+        { status: 400 }
+      );
+    }
+    
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : "An unexpected error occurred",
+        error: ErrorService.formatError(error)
       }),
       { status: 500 }
     );
