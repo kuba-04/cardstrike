@@ -14,8 +14,14 @@ export function LoadingIndicator({ size = "md", className }: LoadingIndicatorPro
   };
 
   return (
-    <div className={cn("flex items-center justify-center", className)} data-testid="loading-indicator">
-      <Loader2 className={cn(sizeClasses[size], "animate-spin text-primary")} />
+    <div 
+      className={cn("flex items-center justify-center", className)} 
+      role="status"
+      aria-label="Loading"
+      aria-live="polite"
+      data-testid="loading-indicator"
+    >
+      <Loader2 className={cn(sizeClasses[size], "animate-spin text-primary")} aria-hidden="true" />
     </div>
   );
 }
