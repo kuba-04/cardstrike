@@ -34,7 +34,7 @@ export function getSupabaseClient(context?: {
 
 export function createSupabaseBrowserClient() {
   // TODO: refactor to use cookies from the server
-  return createBrowserClient<Database>(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_KEY, {
+  return createBrowserClient<Database>(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_ANON_KEY, {
     cookies: {
       get(key) {
         return document.cookie
@@ -63,7 +63,7 @@ export function createSupabaseServerClient(context: {
     set: (name: string, value: string, options: CookieOptions) => void;
   };
 }) {
-  return createServerClient<Database>(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_KEY, {
+  return createServerClient<Database>(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_ANON_KEY, {
     cookies: {
       get(name: string) {
         return context.cookies.get(name);
