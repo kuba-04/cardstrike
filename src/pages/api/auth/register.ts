@@ -15,6 +15,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const body = await request.json();
     const { email, password, username } = registerSchema.parse(body);
 
+    console.log("Registering user:", email);
+
     const supabase = createSupabaseServerClient({
       headers: request.headers,
       cookies: {
