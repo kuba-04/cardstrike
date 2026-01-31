@@ -38,7 +38,6 @@ export function LearningView() {
     } catch (error) {
       console.error("Error fetching due cards:", error);
       setError(error instanceof Error ? error.message : "Unknown error");
-      toast.error("Failed to load cards");
     } finally {
       setLoading(false);
     }

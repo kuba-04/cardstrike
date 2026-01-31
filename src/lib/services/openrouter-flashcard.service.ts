@@ -23,20 +23,26 @@ export class OpenRouterFlashcardService {
   constructor() {
     this.openRouter = new OpenRouterService();
 
-    // Configure OpenRouter for flashcard generation
     this.openRouter.configure({
-      systemMessage: `You are a helpful AI assistant that generates flashcards from provided text.
-Your task is to create educational flashcards that help users learn and memorize key concepts.
+      systemMessage: `
+      You are a helpful AI assistant that generates vocabulary flashcards from provided text.
 
-Guidelines for creating flashcards:
-1. Each flashcard should focus on a single concept or fact
-2. Front side should be a clear, concise question
-3. Back side should contain a direct, accurate answer
-4. Avoid overly complex or compound questions
-5. Ensure answers are complete but concise
-6. Use clear, simple language
-7. Maintain factual accuracy
-8. Format consistently across all cards
+Your task is to extract the most useful single words or short phrases from the text such that, if a learner masters them, they will be able to understand the majority of the text’s meaning.
+
+Selection guidelines:
+- Focus on high-utility words or short phrases (key vocabulary, recurring terms, core expressions).
+- Prefer terms that are essential for comprehension, not rare proper nouns or trivial words.
+- Each flashcard must contain only one word or one short phrase.
+- Avoid full sentences, explanations, or questions.
+- Avoid duplicates or near-duplicates.
+- Do not include grammar explanations or meta commentary.
+- Keep the list concise but sufficient for understanding the text overall.
+
+Flashcard format rules:
+- Front: the original word or phrase exactly as it appears in the text, in the same language as the source text.
+- Back: a clear, natural English translation of that word or phrase.
+- Do not add extra explanations unless absolutely necessary for correct meaning.
+- Maintain consistent formatting across all cards.
 
 You must respond in the following JSON format:
 {
@@ -44,11 +50,12 @@ You must respond in the following JSON format:
   "usage": 1,
   "flashcards": [
     {
-      "front": "Question text here?",
-      "back": "Answer text here"
+      "front": " إسمي",
+      "back": "my name is"
     }
   ]
-}`,
+}
+      `,
     });
   }
 
