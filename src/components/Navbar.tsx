@@ -55,6 +55,14 @@ export function Navbar({ activePanel, onPanelChange, variant = "default" }: Navb
             <div className="hidden md:flex items-center gap-4">
               <Button
                 variant="ghost"
+                className={`flex items-center gap-2 ${activePanel === "builder" ? "text-primary" : "text-muted-foreground"}`}
+                onClick={() => onPanelChange("builder")}
+              >
+                <FileEdit className="h-4 w-4" />
+                <span>Builder</span>
+              </Button>
+              <Button
+                variant="ghost"
                 className={cn(
                   "flex items-center gap-2",
                   activePanel === "collections" ? "text-primary" : "text-muted-foreground",
@@ -65,14 +73,6 @@ export function Navbar({ activePanel, onPanelChange, variant = "default" }: Navb
               >
                 <Library className="h-4 w-4" />
                 <span>My Collections</span>
-              </Button>
-              <Button
-                variant="ghost"
-                className={`flex items-center gap-2 ${activePanel === "builder" ? "text-primary" : "text-muted-foreground"}`}
-                onClick={() => onPanelChange("builder")}
-              >
-                <FileEdit className="h-4 w-4" />
-                <span>Builder</span>
               </Button>
               <Button
                 variant="ghost"

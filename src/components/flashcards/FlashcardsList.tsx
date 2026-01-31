@@ -183,7 +183,7 @@ export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
   if (showCollectionsList) {
     return (
       <div className="p-4">
-        <CollectionsList onSelectCollection={handleSelectCollection} showDelete={true} />
+        <CollectionsList onSelectCollection={handleSelectCollection} showDelete={true} showCreate={true} />
       </div>
     );
   }

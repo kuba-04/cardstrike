@@ -13,9 +13,10 @@ import type { CollectionWithStatsDTO } from "@/types";
 interface CollectionsListProps {
   onSelectCollection: (collectionId: string) => void;
   showDelete?: boolean; // Optional - controls whether delete button is shown
+  showCreate?: boolean; // Optional - controls whether create button is shown
 }
 
-export function CollectionsList({ onSelectCollection, showDelete = false }: CollectionsListProps) {
+export function CollectionsList({ onSelectCollection, showDelete = false, showCreate = false }: CollectionsListProps) {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -136,10 +137,12 @@ export function CollectionsList({ onSelectCollection, showDelete = false }: Coll
         title="No collections yet"
         description="Create your first collection to organize your flashcards"
         action={
-          <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Collection
-          </Button>
+          showCreate ? (
+            <Button onClick={() => setShowCreateDialog(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Collection
+            </Button>
+          ) : undefined
         }
       />
     );
@@ -151,10 +154,12 @@ export function CollectionsList({ onSelectCollection, showDelete = false }: Coll
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold tracking-tight">Your Collections</h2>
-          <Button onClick={() => setShowCreateDialog(true)} variant="outline">
-            <Plus className="h-4 w-4 mr-2" />
-            New Collection
-          </Button>
+          {showCreate && (
+            <Button onClick={() => setShowCreateDialog(true)} variant="outline">
+              <Plus className="h-4 w-4 mr-2" />
+              New Collection
+            </Button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -169,8 +174,8 @@ export function CollectionsList({ onSelectCollection, showDelete = false }: Coll
         </div>
       </div>
 
-      {/* Create Collection Dialog */}
-      {showCreateDialog && (
+      {/* Create Collection Dialog - only render if showCreate is true */}
+      {showCreate && showCreateDialog && (
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" 
           onClick={() => setShowCreateDialog(false)}
