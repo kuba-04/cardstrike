@@ -23,7 +23,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const flashcardsService = new FlashcardsService(locals.supabase);
 
       // Generate flashcards without storing to database
-      const candidates = await flashcardsService.generateFlashcardsForDemo(body.source_text);
+      const candidates = await flashcardsService.generateFlashcardsForDemo(
+        body.source_text,
+        body.front_language,
+        body.back_language
+      );
 
       // Return a response with a temporary generation ID for the frontend
       return new Response(

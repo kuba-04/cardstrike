@@ -81,6 +81,8 @@ export interface DeleteFlashcardResponseDTO {
  */
 export interface GenerateFlashcardCommand {
   source_text: string;
+  front_language?: string; // Language of the input text (front of card)
+  back_language?: string;  // Language of the translation (back of card)
 }
 
 /**

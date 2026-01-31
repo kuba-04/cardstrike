@@ -39,8 +39,8 @@ Selection guidelines:
 - Keep the list concise but sufficient for understanding the text overall.
 
 Flashcard format rules:
-- Front: the original word or phrase exactly as it appears in the text, in the same language as the source text.
-- Back: a clear, natural English translation of that word or phrase.
+- Front: the original word or phrase exactly as it appears in the text, in the same language as the source text (the "front" language specified by the user, or auto-detected if not specified).
+- Back: a clear, natural translation of that word or phrase in the target language (the "back" language specified by the user, defaulting to English if not specified).
 - Do not add extra explanations unless absolutely necessary for correct meaning.
 - Maintain consistent formatting across all cards.
 
@@ -63,9 +63,26 @@ You must respond in the following JSON format:
     return this.openRouter.modelName;
   }
 
-  async generateFlashcards(sourceText: string): Promise<FlashcardGenerationResponse> {
+  async generateFlashcards(
+    sourceText: string,
+    frontLanguage?: string,
+    backLanguage?: string
+  ): Promise<FlashcardGenerationResponse> {
     try {
-      const response = await this.openRouter.sendRequest(sourceText);
+      // Build a dynamic prompt with language specification if provided
+      let userPrompt = sourceText;
+      if (frontLanguage || backLanguage) {
+        const frontLang = frontLanguage || "the source text language";
+        const backLang = backLanguage || "English";
+        userPrompt = `Language specification:
+- Front of card (input): ${frontLang}
+- Back of card (translation): ${backLang}
+
+Source text:
+${sourceText}`;
+      }
+
+      const response = await this.openRouter.sendRequest(userPrompt);
 
       // Parse the response and convert to FlashcardCandidateDTO format
       const parsedResponse = JSON.parse(response.choices[0].message.content) as GeneratedResponse;

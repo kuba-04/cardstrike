@@ -110,7 +110,11 @@ export class FlashcardsService {
         const startTime = Date.now();
 
         // Generate flashcard candidates using OpenRouter service
-        const { candidates } = await this.aiService.generateFlashcards(command.source_text);
+        const { candidates } = await this.aiService.generateFlashcards(
+          command.source_text,
+          command.front_language,
+          command.back_language
+        );
         const generationDuration = Date.now() - startTime;
 
         // Update generation record with results
@@ -595,12 +599,20 @@ export class FlashcardsService {
    * @param sourceText The source text to generate flashcards from
    * @returns Generated flashcard candidates
    */
-  async generateFlashcardsForDemo(sourceText: string): Promise<FlashcardCandidateDTO[]> {
+  async generateFlashcardsForDemo(
+    sourceText: string,
+    frontLanguage?: string,
+    backLanguage?: string
+  ): Promise<FlashcardCandidateDTO[]> {
     // Validate input
     const validatedCommand = generateFlashcardSchema.parse({ source_text: sourceText });
 
     // Generate flashcard candidates using OpenRouter service
-    const { candidates } = await this.aiService.generateFlashcards(validatedCommand.source_text);
+    const { candidates } = await this.aiService.generateFlashcards(
+      validatedCommand.source_text,
+      frontLanguage,
+      backLanguage
+    );
 
     // Return candidates without storing anything
     return candidates;

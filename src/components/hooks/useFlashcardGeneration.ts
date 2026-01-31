@@ -24,6 +24,10 @@ export interface CandidateWithLocalStatus {
 export interface UseFlashcardGenerationReturn {
   sourceText: string;
   setSourceText: (text: string) => void;
+  frontLanguage: string;
+  setFrontLanguage: (language: string) => void;
+  backLanguage: string;
+  setBackLanguage: (language: string) => void;
   generationId: string | null;
   candidates: CandidateWithLocalStatus[];
   isLoadingGeneration: boolean;
@@ -40,6 +44,8 @@ export interface UseFlashcardGenerationReturn {
 
 export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
   const [sourceText, setSourceText] = useState("");
+  const [frontLanguage, setFrontLanguage] = useState("");
+  const [backLanguage, setBackLanguage] = useState("English");
   const [generationId, setGenerationId] = useState<string | null>(null);
   const [candidates, setCandidates] = useState<CandidateWithLocalStatus[]>([]);
   const [isLoadingGeneration, setIsLoadingGeneration] = useState(false);
@@ -64,7 +70,11 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
       const response = await fetch("/api/flashcards/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source_text: sourceText } as GenerateFlashcardCommand),
+        body: JSON.stringify({
+          source_text: sourceText,
+          front_language: frontLanguage || undefined,
+          back_language: backLanguage || undefined,
+        } as GenerateFlashcardCommand),
       });
 
       const data = await handleApiResponse<GenerateFlashcardResponseDTO>(response);
@@ -194,6 +204,8 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
           description: "In demo mode, flashcards are not saved. Log in to save and manage your flashcards!",
         });
         setSourceText("");
+        setFrontLanguage("");
+        setBackLanguage("English");
         setGenerationId(null);
         setCandidates([]);
         return;
@@ -207,6 +219,8 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
 
       // Reset state after successful completion
       setSourceText("");
+      setFrontLanguage("");
+      setBackLanguage("English");
       setGenerationId(null);
       setCandidates([]);
     } catch (err) {
@@ -228,6 +242,10 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
   return {
     sourceText,
     setSourceText,
+    frontLanguage,
+    setFrontLanguage,
+    backLanguage,
+    setBackLanguage,
     generationId,
     candidates,
     isLoadingGeneration,

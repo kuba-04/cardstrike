@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import { CandidateReviewArea } from "./CandidateReviewArea";
 import { GenerateButton } from "./GenerateButton";
+import { LanguageSelector } from "./LanguageSelector";
 import { useDemoSession } from "./hooks/useDemoSession";
 import { useFlashcardGeneration } from "./hooks/useFlashcardGeneration";
 import { TextInputArea } from "./TextInputArea";
@@ -13,6 +14,10 @@ export function FlashcardGenerationView() {
   const {
     sourceText,
     setSourceText,
+    frontLanguage,
+    setFrontLanguage,
+    backLanguage,
+    setBackLanguage,
     generationId,
     candidates,
     isLoadingGeneration,
@@ -97,6 +102,14 @@ export function FlashcardGenerationView() {
           Paste your text below and we'll generate flashcards for you. The text should be between 100 and 10,000 characters.
         </p>
       </div>
+
+      <LanguageSelector
+        frontLanguage={frontLanguage}
+        backLanguage={backLanguage}
+        onFrontLanguageChange={setFrontLanguage}
+        onBackLanguageChange={setBackLanguage}
+        disabled={isLoadingGeneration || !!generationId}
+      />
 
       <TextInputArea
         value={sourceText}
