@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { CandidateReviewArea } from "./CandidateReviewArea";
 import { GenerateButton } from "./GenerateButton";
 import { LanguageSelector } from "./LanguageSelector";
+import { CollectionSelector } from "./collections/CollectionSelector";
 import { useDemoSession } from "./hooks/useDemoSession";
 import { useFlashcardGeneration } from "./hooks/useFlashcardGeneration";
 import { TextInputArea } from "./TextInputArea";
@@ -18,6 +19,8 @@ export function FlashcardGenerationView() {
     setFrontLanguage,
     backLanguage,
     setBackLanguage,
+    collectionId,
+    setCollectionId,
     generationId,
     candidates,
     isLoadingGeneration,
@@ -103,13 +106,28 @@ export function FlashcardGenerationView() {
         </p>
       </div>
 
-      <LanguageSelector
-        frontLanguage={frontLanguage}
-        backLanguage={backLanguage}
-        onFrontLanguageChange={setFrontLanguage}
-        onBackLanguageChange={setBackLanguage}
-        disabled={isLoadingGeneration || !!generationId}
-      />
+      <div className="space-y-4">
+        <div>
+          <label className="text-sm font-medium mb-2 block">Collection (optional)</label>
+          <CollectionSelector
+            selectedCollectionId={collectionId}
+            onSelectCollection={setCollectionId}
+            disabled={isLoadingGeneration || !!generationId}
+            allowNull={true}
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Choose a collection to organize your generated flashcards
+          </p>
+        </div>
+
+        <LanguageSelector
+          frontLanguage={frontLanguage}
+          backLanguage={backLanguage}
+          onFrontLanguageChange={setFrontLanguage}
+          onBackLanguageChange={setBackLanguage}
+          disabled={isLoadingGeneration || !!generationId}
+        />
+      </div>
 
       <TextInputArea
         value={sourceText}

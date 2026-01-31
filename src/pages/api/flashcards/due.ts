@@ -18,14 +18,18 @@ export const GET: APIRoute = async ({ request, locals }) => {
       });
     }
 
+    // Get optional collection_id from query params
+    const url = new URL(request.url);
+    const collectionId = url.searchParams.get("collection_id");
+
     // Initialize service and get due flashcards
     const learningService = new FlashcardsLearningService(locals.supabase);
     
     // Initialize any flashcards that don't have SuperMemo data
-    await learningService.initializeFlashcardsForLearning(user.id);
+    await learningService.initializeFlashcardsForLearning(user.id, collectionId || undefined);
     
     // Get flashcards due for review
-    const result = await learningService.getDueFlashcards(user.id);
+    const result = await learningService.getDueFlashcards(user.id, collectionId || undefined);
 
     return new Response(JSON.stringify(result), {
       status: 200,

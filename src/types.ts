@@ -7,6 +7,11 @@ import type { Database } from "./db/database.types";
 export type FlashcardEntity = Database["public"]["Tables"]["flashcards"]["Row"];
 
 /**
+ * Entity Type alias for collections derived from the database model.
+ */
+export type CollectionEntity = Database["public"]["Tables"]["collections"]["Row"];
+
+/**
  * DTO for representing a flashcard in API responses.
  * Maps DB 'front_content' to 'front_text' and DB 'back_content' to 'back_text'.
  * 'is_ai' is a derived flag (true if 'created_by' is not 'MAN').
@@ -17,6 +22,8 @@ export interface FlashcardDTO {
   back_text: FlashcardEntity["back_content"];
   is_ai: boolean; // Derived from flashcardEntity.created_by (true if created_by !== 'MAN')
   created_at: FlashcardEntity["created_at"];
+  collection_id: FlashcardEntity["collection_id"];
+  collection_name?: string; // For display purposes
 }
 
 /**
@@ -43,6 +50,7 @@ export interface GetFlashcardsResponseDTO {
 export interface CreateFlashcardCommand {
   front_text: FlashcardEntity["front_content"];
   back_text: FlashcardEntity["back_content"];
+  collection_id?: string | null;
 }
 
 /**
@@ -83,6 +91,7 @@ export interface GenerateFlashcardCommand {
   source_text: string;
   front_language?: string; // Language of the input text (front of card)
   back_language?: string;  // Language of the translation (back of card)
+  collection_id?: string | null; // Optional collection to save generated flashcards to
 }
 
 /**
@@ -135,4 +144,74 @@ export interface CompleteGenerationResponseDTO {
     rejected: number;
   };
   saved_flashcards: FlashcardDTO[];
+}
+
+/**
+ * DTO for representing a collection in API responses.
+ */
+export interface CollectionDTO {
+  id: CollectionEntity["id"];
+  name: CollectionEntity["name"];
+  created_at: CollectionEntity["created_at"];
+}
+
+/**
+ * DTO for collection statistics including mastery indicators.
+ */
+export interface CollectionStatsDTO {
+  total_cards: number;
+  due_cards: number;
+  avg_ease_factor: number;
+  mastery_color: "red" | "yellow" | "green" | "gray";
+}
+
+/**
+ * DTO combining collection info with statistics.
+ */
+export interface CollectionWithStatsDTO extends CollectionDTO {
+  stats: CollectionStatsDTO;
+}
+
+/**
+ * Command Model for creating a new collection.
+ */
+export interface CreateCollectionCommand {
+  name: string;
+}
+
+/**
+ * Response DTO returned after creating a collection.
+ */
+export interface CreateCollectionResponseDTO {
+  message: string;
+  collection: CollectionDTO;
+}
+
+/**
+ * Command Model for updating a collection.
+ */
+export interface UpdateCollectionCommand {
+  name: string;
+}
+
+/**
+ * Response DTO returned after updating a collection.
+ */
+export interface UpdateCollectionResponseDTO {
+  message: string;
+  collection: CollectionDTO;
+}
+
+/**
+ * Response DTO returned after deleting a collection.
+ */
+export interface DeleteCollectionResponseDTO {
+  message: string;
+}
+
+/**
+ * Response DTO for listing collections with stats.
+ */
+export interface GetCollectionsResponseDTO {
+  collections: CollectionWithStatsDTO[];
 }

@@ -20,9 +20,42 @@ export interface Database {
   };
   public: {
     Tables: {
+      collections: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "collections_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       flashcards: {
         Row: {
           back_content: string;
+          collection_id: string | null;
           created_at: string;
           created_by: Database["public"]["Enums"]["flashcard_origin"];
           ease_factor: number | null;
@@ -38,6 +71,7 @@ export interface Database {
         };
         Insert: {
           back_content: string;
+          collection_id?: string | null;
           created_at?: string;
           created_by: Database["public"]["Enums"]["flashcard_origin"];
           ease_factor?: number | null;
@@ -53,6 +87,7 @@ export interface Database {
         };
         Update: {
           back_content?: string;
+          collection_id?: string | null;
           created_at?: string;
           created_by?: Database["public"]["Enums"]["flashcard_origin"];
           ease_factor?: number | null;
@@ -67,6 +102,13 @@ export interface Database {
           user_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "flashcards_collection_id_fkey";
+            columns: ["collection_id"];
+            isOneToOne: false;
+            referencedRelation: "collections";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "flashcards_generation_id_fkey";
             columns: ["generation_id"];
@@ -132,6 +174,7 @@ export interface Database {
         Row: {
           accepted_edited_count: number | null;
           accepted_unedited_count: number | null;
+          collection_id: string | null;
           created_at: string;
           generated_count: number;
           generation_duration: number;
@@ -143,6 +186,7 @@ export interface Database {
         Insert: {
           accepted_edited_count?: number | null;
           accepted_unedited_count?: number | null;
+          collection_id?: string | null;
           created_at?: string;
           generated_count: number;
           generation_duration: number;
@@ -154,6 +198,7 @@ export interface Database {
         Update: {
           accepted_edited_count?: number | null;
           accepted_unedited_count?: number | null;
+          collection_id?: string | null;
           created_at?: string;
           generated_count?: number;
           generation_duration?: number;
@@ -163,6 +208,13 @@ export interface Database {
           user_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "generations_collection_id_fkey";
+            columns: ["collection_id"];
+            isOneToOne: false;
+            referencedRelation: "collections";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "generations_user_id_fkey";
             columns: ["user_id"];
