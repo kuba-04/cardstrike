@@ -28,6 +28,8 @@ export interface UseFlashcardGenerationReturn {
   setFrontLanguage: (language: string) => void;
   backLanguage: string;
   setBackLanguage: (language: string) => void;
+  collectionId: string | null;
+  setCollectionId: (id: string | null) => void;
   generationId: string | null;
   candidates: CandidateWithLocalStatus[];
   isLoadingGeneration: boolean;
@@ -46,6 +48,7 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
   const [sourceText, setSourceText] = useState("");
   const [frontLanguage, setFrontLanguage] = useState("");
   const [backLanguage, setBackLanguage] = useState("English");
+  const [collectionId, setCollectionId] = useState<string | null>(null);
   const [generationId, setGenerationId] = useState<string | null>(null);
   const [candidates, setCandidates] = useState<CandidateWithLocalStatus[]>([]);
   const [isLoadingGeneration, setIsLoadingGeneration] = useState(false);
@@ -74,6 +77,7 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
           source_text: sourceText,
           front_language: frontLanguage || undefined,
           back_language: backLanguage || undefined,
+          collection_id: collectionId || undefined,
         } as GenerateFlashcardCommand),
       });
 
@@ -206,6 +210,7 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
         setSourceText("");
         setFrontLanguage("");
         setBackLanguage("English");
+        setCollectionId(null);
         setGenerationId(null);
         setCandidates([]);
         return;
@@ -221,6 +226,7 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
       setSourceText("");
       setFrontLanguage("");
       setBackLanguage("English");
+      setCollectionId(null);
       setGenerationId(null);
       setCandidates([]);
     } catch (err) {
@@ -246,6 +252,8 @@ export function useFlashcardGeneration(): UseFlashcardGenerationReturn {
     setFrontLanguage,
     backLanguage,
     setBackLanguage,
+    collectionId,
+    setCollectionId,
     generationId,
     candidates,
     isLoadingGeneration,
