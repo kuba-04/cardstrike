@@ -1,4 +1,4 @@
-name: Test, Build and E2E
+name: Test and Build
 on:
   push:
     branches: [master]
