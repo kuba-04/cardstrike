@@ -36,6 +36,7 @@ export const listFlashcardsSchema = z.object({
   limit: z.number().int().positive().max(100),
   filter: z.enum(["ai", "manual"]).optional(),
   sort: z.enum(["created_at"]).optional(),
+  collection_id: z.string().uuid().optional(),
 });
 
 export const createFlashcardSchema = z.object({
@@ -98,6 +99,7 @@ export class FlashcardsService {
           accepted_unedited_count: 0,
           accepted_edited_count: 0,
           generation_duration: 0, // Will be updated after generation
+          collection_id: command.collection_id || null, // Store collection_id for later use
         })
         .select("id")
         .single();
@@ -263,7 +265,7 @@ export class FlashcardsService {
       // Validate input
       listFlashcardsSchema.parse(params);
 
-      const { page, limit, filter, sort } = params;
+      const { page, limit, filter, sort, collection_id } = params;
 
       // Build query
       let query = this.supabase
@@ -277,6 +279,11 @@ export class FlashcardsService {
         query = query.neq("created_by", "MAN");
       } else if (filter === "manual") {
         query = query.eq("created_by", "MAN");
+      }
+
+      // Filter by collection if provided
+      if (collection_id) {
+        query = query.eq("collection_id", collection_id);
       }
 
       // Apply sorting
@@ -298,6 +305,7 @@ export class FlashcardsService {
         back_text: card.back_content,
         is_ai: card.created_by !== "MAN",
         created_at: card.created_at,
+        collection_id: card.collection_id,
       }));
 
       return {
@@ -345,6 +353,7 @@ export class FlashcardsService {
         back_text: flashcard.back_content,
         is_ai: flashcard.created_by !== "MAN",
         created_at: flashcard.created_at,
+        collection_id: flashcard.collection_id,
       };
     } catch (error) {
       throw error;
@@ -364,6 +373,7 @@ export class FlashcardsService {
           back_content: command.back_text,
           user_id: userId,
           created_by: "MAN",
+          collection_id: command.collection_id || null,
         })
         .select()
         .single();
@@ -379,6 +389,7 @@ export class FlashcardsService {
         back_text: flashcard.back_content,
         is_ai: false,
         created_at: flashcard.created_at,
+        collection_id: flashcard.collection_id,
       };
 
       return {
@@ -446,6 +457,7 @@ export class FlashcardsService {
         back_text: flashcard.back_content,
         is_ai: flashcard.created_by !== "MAN",
         created_at: flashcard.created_at,
+        collection_id: flashcard.collection_id,
       };
 
       return {
@@ -505,7 +517,7 @@ export class FlashcardsService {
     // Check if generation exists and belongs to user
     const { data: generation, error: genError } = await this.supabase
       .from("generations")
-      .select("id, status")
+      .select("id, status, collection_id")
       .eq("id", generationId)
       .eq("user_id", userId)
       .single();
@@ -549,6 +561,7 @@ export class FlashcardsService {
           user_id: userId,
           created_by: candidate.status === "edited" ? "AI_EDIT" : "AI_FULL",
           generation_id: generationId,
+          collection_id: generation.collection_id, // Use collection_id from generation
         })
         .select()
         .single();
@@ -564,6 +577,7 @@ export class FlashcardsService {
         back_text: flashcard.back_content,
         is_ai: true,
         created_at: flashcard.created_at,
+        collection_id: flashcard.collection_id,
       });
     }
 

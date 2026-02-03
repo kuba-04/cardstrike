@@ -1,17 +1,27 @@
 import { render as testingLibraryRender } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Toaster } from "sonner";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Custom render function that includes providers
 export function render(ui: React.ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false, // Disable retries in tests
+        gcTime: 0, // Disable cache persistence in tests
+      },
+    },
+  });
+
   return {
     user: userEvent.setup(),
     ...testingLibraryRender(ui, {
       wrapper: ({ children }) => (
-        <>
+        <QueryClientProvider client={queryClient}>
           {children}
           <Toaster />
-        </>
+        </QueryClientProvider>
       ),
     }),
   };

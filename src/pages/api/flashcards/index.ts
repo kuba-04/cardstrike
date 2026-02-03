@@ -8,11 +8,13 @@ const QuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).default(20),
   filter: z.enum(["ai", "manual"]).optional(),
   sort: z.enum(["created_at"]).optional(),
+  collection_id: z.string().uuid().optional(),
 });
 
 const CreateFlashcardSchema = z.object({
   front_text: z.string().min(1).max(1000),
   back_text: z.string().min(1).max(1000),
+  collection_id: z.string().uuid().optional().nullable(),
 });
 
 export const prerender = false;
@@ -41,6 +43,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
       limit: params.limit,
       filter: params.filter,
       sort: params.sort,
+      collection_id: params.collection_id,
     });
 
     // Initialize service and list flashcards

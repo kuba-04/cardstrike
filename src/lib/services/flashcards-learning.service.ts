@@ -15,21 +15,30 @@ export class FlashcardsLearningService {
       back_text: flashcard.back_content,
       is_ai: flashcard.created_by !== "MAN",
       created_at: flashcard.created_at,
+      collection_id: flashcard.collection_id,
     };
   }
 
   /**
    * Fetches all flashcards that are due for review
+   * @param collectionId - Optional collection ID to filter flashcards
    */
-  async getDueFlashcards(userId: string): Promise<{ flashcards: FlashcardDTO[] }> {
+  async getDueFlashcards(userId: string, collectionId?: string): Promise<{ flashcards: FlashcardDTO[] }> {
     const today = new Date().toISOString();
 
-    const { data, error } = await this.supabase
+    let query = this.supabase
       .from("flashcards")
       .select("*")
       .eq("user_id", userId)
       .or(`next_review_at.lte.${today},next_review_at.is.null`)
       .order("next_review_at", { ascending: true });
+
+    // Filter by collection if provided
+    if (collectionId) {
+      query = query.eq("collection_id", collectionId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Error fetching due flashcards:", error);
@@ -167,14 +176,22 @@ export class FlashcardsLearningService {
 
   /**
    * Initializes SuperMemo data for flashcards that don't have it
+   * @param collectionId - Optional collection ID to filter flashcards
    */
-  async initializeFlashcardsForLearning(userId: string): Promise<{ count: number }> {
+  async initializeFlashcardsForLearning(userId: string, collectionId?: string): Promise<{ count: number }> {
     // Get all flashcards without SuperMemo data
-    const { data: flashcards, error: fetchError } = await this.supabase
+    let query = this.supabase
       .from("flashcards")
       .select("id")
       .eq("user_id", userId)
       .is("interval", null);
+
+    // Filter by collection if provided
+    if (collectionId) {
+      query = query.eq("collection_id", collectionId);
+    }
+
+    const { data: flashcards, error: fetchError } = await query;
 
     if (fetchError) {
       throw new Error(`Failed to fetch flashcards for initialization: ${fetchError.message}`);

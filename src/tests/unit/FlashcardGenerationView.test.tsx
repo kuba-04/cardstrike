@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
 import { act } from "@testing-library/react";
+import { render } from "../../test/test-utils";
 import { FlashcardGenerationView } from "../../components/FlashcardGenerationView";
 import { useFlashcardGeneration } from "../../components/hooks/useFlashcardGeneration";
 import { useDemoSession } from "../../components/hooks/useDemoSession";
@@ -20,6 +21,12 @@ describe("FlashcardGenerationView", () => {
     vi.mocked(useFlashcardGeneration).mockImplementation(() => ({
       sourceText: "",
       setSourceText: mockSetSourceText,
+      frontLanguage: "",
+      setFrontLanguage: vi.fn(),
+      backLanguage: "English",
+      setBackLanguage: vi.fn(),
+      collectionId: null,
+      setCollectionId: vi.fn(),
       generationId: null,
       candidates: [],
       isLoadingGeneration: false,
@@ -84,6 +91,12 @@ describe("FlashcardGenerationView", () => {
     vi.mocked(useFlashcardGeneration).mockImplementation(() => ({
       sourceText: validText,
       setSourceText: mockSetSourceText,
+      frontLanguage: "",
+      setFrontLanguage: vi.fn(),
+      backLanguage: "English",
+      setBackLanguage: vi.fn(),
+      collectionId: null,
+      setCollectionId: vi.fn(),
       generationId: null,
       candidates: [],
       isLoadingGeneration: false,
@@ -114,6 +127,12 @@ describe("FlashcardGenerationView", () => {
     vi.mocked(useFlashcardGeneration).mockImplementation(() => ({
       sourceText: "a".repeat(100),
       setSourceText: mockSetSourceText,
+      frontLanguage: "",
+      setFrontLanguage: vi.fn(),
+      backLanguage: "English",
+      setBackLanguage: vi.fn(),
+      collectionId: null,
+      setCollectionId: vi.fn(),
       generationId: null,
       candidates: [],
       isLoadingGeneration: true,

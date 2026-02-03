@@ -8,10 +8,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CollectionsList } from "@/components/collections/CollectionsList";
 import type { FlashcardDTO, GetFlashcardsResponseDTO } from "@/types";
 import type { User } from "@supabase/supabase-js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, LogIn, PlusCircle } from "lucide-react";
+import { AlertCircle, LogIn, PlusCircle, FolderOpen, ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { EditFlashcardForm } from "./EditFlashcardForm";
@@ -23,19 +24,33 @@ interface FlashcardsListProps {
 export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
+  const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
+  const [showCollectionsList, setShowCollectionsList] = useState(true);
   const queryClient = useQueryClient();
 
   const isDemo = !initialUser?.id;
 
+  // Reset to collections view when collection is cleared
+  useEffect(() => {
+    if (selectedCollectionId === null) {
+      setShowCollectionsList(true);
+    }
+  }, [selectedCollectionId]);
+
   const { data, isLoading, error } = useQuery<GetFlashcardsResponseDTO>({
-    queryKey: ["flashcards", page, limit],
+    queryKey: ["flashcards", page, limit, selectedCollectionId],
     queryFn: async () => {
       // Don't make the API call if in demo mode
       if (isDemo) {
         throw new Error("Demo mode");
       }
 
-      const response = await fetch(`/api/flashcards?page=${page}&limit=${limit}`);
+      let url = `/api/flashcards?page=${page}&limit=${limit}`;
+      if (selectedCollectionId) {
+        url += `&collection_id=${selectedCollectionId}`;
+      }
+
+      const response = await fetch(url);
       if (!response.ok) throw new Error("Failed to fetch flashcards");
       return response.json();
     },
@@ -44,7 +59,20 @@ export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
       if (error.message === "Demo mode") return false;
       return failureCount < 2;
     },
+    // Only fetch when we have a selected collection
+    enabled: !isDemo && selectedCollectionId !== null,
   });
+
+  const handleSelectCollection = (collectionId: string) => {
+    setSelectedCollectionId(collectionId);
+    setShowCollectionsList(false);
+    setPage(1); // Reset to first page when changing collection
+  };
+
+  const handleBackToCollections = () => {
+    setSelectedCollectionId(null);
+    setShowCollectionsList(true);
+  };
 
   const handleEdit = async (flashcard: FlashcardDTO, updateData: { front_text: string; back_text: string }) => {
     try {
@@ -60,43 +88,44 @@ export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
         throw new Error("Failed to update flashcard");
       }
 
-      // Invalidate and refetch flashcards
-      queryClient.invalidateQueries({ queryKey: ["flashcards"] });
-      return Promise.resolve();
+      await queryClient.invalidateQueries({ queryKey: ["flashcards"] });
+      toast.success("Flashcard updated");
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to update flashcard";
-      console.error(errorMessage);
-      return Promise.reject(error);
+      console.error("Error updating flashcard:", error);
+      toast.error("Failed to update flashcard");
     }
   };
 
   const handleHide = async (flashcard: FlashcardDTO) => {
     try {
-      const response = await fetch(`/api/flashcards/${flashcard.id}/hide`, {
-        method: "PATCH",
+      const response = await fetch(`/api/flashcards/${flashcard.id}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ hidden: true }),
+        body: JSON.stringify({
+          front_text: flashcard.front_text,
+          back_text: flashcard.back_text,
+        }),
       });
 
       if (!response.ok) {
         throw new Error("Failed to hide flashcard");
       }
 
-      // Invalidate and refetch flashcards
-      queryClient.invalidateQueries({ queryKey: ["flashcards"] });
-      toast.success("Flashcard hidden successfully");
+      await queryClient.invalidateQueries({ queryKey: ["flashcards"] });
+      toast.success("Flashcard hidden");
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to hide flashcard";
-      toast.error("Error", {
-        description: "Failed to hide flashcard. Please try again.",
-      });
-      console.error(errorMessage);
+      console.error("Error hiding flashcard:", error);
+      toast.error("Failed to hide flashcard");
     }
   };
 
   const handleDelete = async (flashcard: FlashcardDTO) => {
+    if (!confirm("Are you sure you want to delete this flashcard?")) {
+      return;
+    }
+
     try {
       const response = await fetch(`/api/flashcards/${flashcard.id}`, {
         method: "DELETE",
@@ -106,21 +135,16 @@ export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
         throw new Error("Failed to delete flashcard");
       }
 
-      // Invalidate and refetch flashcards
-      queryClient.invalidateQueries({ queryKey: ["flashcards"] });
-      toast.success("Flashcard deleted successfully");
-      return Promise.resolve();
+      await queryClient.invalidateQueries({ queryKey: ["flashcards"] });
+      await queryClient.invalidateQueries({ queryKey: ["collections"] });
+      toast.success("Flashcard deleted");
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to delete flashcard";
-      toast.error("Error", {
-        description: "Failed to delete flashcard. Please try again.",
-      });
-      console.error(errorMessage);
-      return Promise.reject(error);
+      console.error("Error deleting flashcard:", error);
+      toast.error("Failed to delete flashcard");
     }
   };
 
-  // Check if user is in demo mode
+  // Demo mode - show login prompt
   if (isDemo) {
     return (
       <div className="p-4">
@@ -155,15 +179,38 @@ export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
     );
   }
 
-  if (error && error.message !== "Demo mode") {
-    return <div className="text-center py-8 text-red-500">Error loading flashcards. Please try again later.</div>;
+  // Show collections list view
+  if (showCollectionsList) {
+    return (
+      <div className="p-4">
+        <CollectionsList onSelectCollection={handleSelectCollection} showDelete={true} showCreate={true} />
+      </div>
+    );
   }
 
+  // Error state
+  if (error && error.message !== "Demo mode") {
+    return (
+      <div className="p-4 space-y-4">
+        <Button variant="ghost" onClick={handleBackToCollections}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Collections
+        </Button>
+        <div className="text-center py-8 text-red-500">Error loading flashcards. Please try again later.</div>
+      </div>
+    );
+  }
+
+  // Loading state
   if (isLoading) {
     return (
       <div className="p-4">
+        <Button variant="ghost" onClick={handleBackToCollections} className="mb-4">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Collections
+        </Button>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold tracking-tight">My Flashcards</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">Flashcards</h2>
           <Button asChild className="gap-2">
             <a href="/manual">
               <PlusCircle className="h-4 w-4" />
@@ -185,10 +232,16 @@ export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
     );
   }
 
+  // Flashcards view for selected collection
   return (
     <div className="p-4">
+      <Button variant="ghost" onClick={handleBackToCollections} className="mb-4">
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Collections
+      </Button>
+
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold tracking-tight">My Flashcards</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">Flashcards</h2>
         <Button asChild className="gap-2">
           <a href="/manual">
             <PlusCircle className="h-4 w-4" />
@@ -199,15 +252,15 @@ export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
 
       {data?.flashcards.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
-          <p>You don&apos;t have any flashcards yet. Create your first one!</p>
+          <p>No flashcards in this collection yet.</p>
         </div>
       ) : (
         <>
           <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 mb-8">
             {data?.flashcards.map((flashcard) => (
-              <FlashcardItem 
-                key={flashcard.id} 
-                flashcard={flashcard} 
+              <FlashcardItem
+                key={flashcard.id}
+                flashcard={flashcard}
                 onEdit={(updateData) => handleEdit(flashcard, updateData)}
                 onHide={() => handleHide(flashcard)}
                 onDelete={() => handleDelete(flashcard)}
@@ -220,9 +273,12 @@ export function FlashcardsList({ initialUser }: FlashcardsListProps = {}) {
               <Button variant="outline" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
                 Previous
               </Button>
+              <span className="flex items-center px-4">
+                Page {page} of {Math.ceil(data.pagination.total / limit)}
+              </span>
               <Button
                 variant="outline"
-                disabled={page * limit >= data.pagination.total}
+                disabled={page >= Math.ceil(data.pagination.total / limit)}
                 onClick={() => setPage((p) => p + 1)}
               >
                 Next
@@ -265,30 +321,11 @@ function FlashcardItem({ flashcard, onEdit, onHide, onDelete }: FlashcardItemPro
     
     setContextMenuPosition({ x, y });
     setContextMenuOpen(true);
-    
-    // Add a click event listener to close the menu when clicking outside
-    const handleClickOutside = () => {
-      setContextMenuOpen(false);
-      window.removeEventListener('click', handleClickOutside);
-    };
-    
-    // Use setTimeout to avoid immediate triggering of the click event
-    setTimeout(() => {
-      window.addEventListener('click', handleClickOutside);
-    }, 0);
-    
-    return false;
   };
 
-  // Function to manually toggle the flip state
-  const toggleFlip = () => {
-    if (!isEditing) {
-      setIsFlipped(!isFlipped);
-    }
-  };
-
-  // Handler for delete with loading state
-  const handleDeleteWithState = async () => {
+  const handleDeleteClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setContextMenuOpen(false);
     setIsDeleting(true);
     try {
       await onDelete();
@@ -297,147 +334,155 @@ function FlashcardItem({ flashcard, onEdit, onHide, onDelete }: FlashcardItemPro
     }
   };
 
-  // Handler for starting edit mode
-  const handleStartEdit = () => {
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setContextMenuOpen(false);
     setIsEditing(true);
   };
 
-  // Handler for saving edits
-  const handleSaveEdit = async (updateData: { front_text: string; back_text: string }) => {
-    try {
-      await onEdit(updateData);
-      setIsEditing(false);
-      toast.success("Flashcard updated successfully");
-    } catch (error) {
-      toast.error("Failed to update flashcard");
-    }
-  };
-
-  // Handler for canceling edit mode
-  const handleCancelEdit = () => {
+  const handleCloseEdit = () => {
     setIsEditing(false);
   };
 
+  const handleSaveEdit = async (data: { front_text: string; back_text: string }) => {
+    await onEdit(data);
+    setIsEditing(false);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = () => setContextMenuOpen(false);
+    if (contextMenuOpen) {
+      document.addEventListener("click", handleClickOutside);
+      return () => document.removeEventListener("click", handleClickOutside);
+    }
+  }, [contextMenuOpen]);
+
+  if (isEditing) {
+    return (
+      <EditFlashcardForm
+        flashcard={flashcard}
+        onSave={handleSaveEdit}
+        onCancel={handleCloseEdit}
+      />
+    );
+  }
+
   return (
-    <div className="relative">
-      {/* Regular card that flips on click */}
+    <div className="relative group" onContextMenu={handleContextMenu}>
       <div
-        className={`flashcard-container relative w-full sm:max-w-[250px] md:max-w-[280px] xl:max-w-[300px] mx-auto overflow-hidden ${isEditing ? 'h-[400px]' : 'aspect-[4/3]'} ${isEditing ? '' : 'cursor-pointer'}`}
-        onClick={isEditing ? undefined : toggleFlip}
-        onKeyDown={isEditing ? undefined : handleKeyDown}
-        onContextMenu={handleContextMenu}
-        tabIndex={0}
+        className={`flashcard-container h-[200px] cursor-pointer ${isFlipped ? "flipped" : ""}`}
+        onClick={() => setIsFlipped(!isFlipped)}
+        onKeyDown={handleKeyDown}
         role="button"
+        tabIndex={0}
         aria-label={`Flashcard: ${flashcard.front_text}`}
       >
-        {isEditing ? (
-          <Card className="w-full h-full" onClick={(e) => e.stopPropagation()}>
-            <EditFlashcardForm
-              flashcard={flashcard}
-              onSave={handleSaveEdit}
-              onCancel={handleCancelEdit}
-            />
+        <div className="flashcard w-full h-full relative">
+          {/* Front side */}
+          <Card className="flashcard-front absolute w-full h-full border-2">
+            <CardContent className="p-6 flex flex-col h-full">
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center font-medium">{flashcard.front_text}</div>
+              </div>
+              <div className="flex justify-between items-end mt-2">
+                {flashcard.is_ai && (
+                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded flex items-center gap-1 ml-auto">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                    </svg>
+                    AI
+                  </span>
+                )}
+              </div>
+            </CardContent>
           </Card>
-        ) : (
-          <div className={`flashcard absolute inset-0 w-full h-full ${isFlipped ? "flipped" : ""}`}>
-            {/* Front side */}
-            <Card className="flashcard-front absolute inset-0 w-full h-full">
-              <CardContent className="p-6 h-full flex flex-col justify-between">
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="text-center font-medium">{flashcard.front_text}</div>
-                </div>
-                {flashcard.is_ai && (
-                  <div className="flex justify-end mt-2">
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded flex items-center gap-1">
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M12 0L14.59 5.41L20 8L14.59 10.59L12 16L9.41 10.59L4 8L9.41 5.41L12 0Z" />
-                        <path d="M4 16L5.5 19.5L9 21L5.5 22.5L4 26L2.5 22.5L-1 21L2.5 19.5L4 16Z" />
-                        <path d="M20 12L21.5 15.5L25 17L21.5 18.5L20 22L18.5 18.5L15 17L18.5 15.5L20 12Z" />
-                      </svg>
-                      AI
-                    </span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
 
-            {/* Back side */}
-            <Card className="flashcard-back absolute inset-0 w-full h-full">
-              <CardContent className="p-6 h-full flex flex-col justify-between">
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="text-center">{flashcard.back_text}</div>
-                </div>
+          {/* Back side */}
+          <Card className="flashcard-back absolute w-full h-full border-2">
+            <CardContent className="p-6 flex flex-col h-full">
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">{flashcard.back_text}</div>
+              </div>
+              <div className="flex justify-between items-end mt-2">
                 {flashcard.is_ai && (
-                  <div className="flex justify-end mt-2">
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded flex items-center gap-1">
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M12 0L14.59 5.41L20 8L14.59 10.59L12 16L9.41 10.59L4 8L9.41 5.41L12 0Z" />
-                        <path d="M4 16L5.5 19.5L9 21L5.5 22.5L4 26L2.5 22.5L-1 21L2.5 19.5L4 16Z" />
-                        <path d="M20 12L21.5 15.5L25 17L21.5 18.5L20 22L18.5 18.5L15 17L18.5 15.5L20 12Z" />
-                      </svg>
-                      AI
-                    </span>
-                  </div>
+                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded flex items-center gap-1 ml-auto">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                    </svg>
+                    AI
+                  </span>
                 )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-      
-      {/* Replace dropdown with fixed position div */}
+
+      {/* Context Menu */}
       {contextMenuOpen && (
-        <div 
-          className="fixed bg-popover text-popover-foreground rounded-md shadow-md py-1 border border-border z-50"
+        <div
+          className="fixed z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
           style={{
-            left: `${contextMenuPosition.x}px`,
-            top: `${contextMenuPosition.y}px`,
-            minWidth: '150px'
+            top: contextMenuPosition.y,
+            left: contextMenuPosition.x,
           }}
         >
-          <button 
-            className="w-full text-left px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleStartEdit();
-            }}
+          <button
+            className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground"
+            onClick={handleEditClick}
           >
             Edit
           </button>
-          <button 
-            className="w-full text-left px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
-            onClick={(e) => {
-              e.stopPropagation();
-              onHide();
-            }}
-          >
-            Hide
-          </button>
-          <button 
-            className="w-full text-left px-3 py-1.5 text-sm text-red-600 hover:bg-red-100 hover:text-red-700"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDeleteWithState();
-            }}
+          <button
+            className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-destructive hover:text-destructive-foreground"
+            onClick={handleDeleteClick}
             disabled={isDeleting}
           >
             {isDeleting ? "Deleting..." : "Delete"}
           </button>
         </div>
       )}
+
+      {/* Quick action buttons (visible on hover) */}
+      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="secondary" size="sm" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M3.625 7.5C3.625 8.12132 3.12132 8.625 2.5 8.625C1.87868 8.625 1.375 8.12132 1.375 7.5C1.375 6.87868 1.87868 6.375 2.5 6.375C3.12132 6.375 3.625 6.87868 3.625 7.5ZM8.625 7.5C8.625 8.12132 8.12132 8.625 7.5 8.625C6.87868 8.625 6.375 8.12132 6.375 7.5C6.375 6.87868 6.87868 6.375 7.5 6.375C8.12132 6.375 8.625 6.87868 8.625 7.5ZM12.5 8.625C13.1213 8.625 13.625 8.12132 13.625 7.5C13.625 6.87868 13.1213 6.375 12.5 6.375C11.8787 6.375 11.375 6.87868 11.375 7.5C11.375 8.12132 11.8787 8.625 12.5 8.625Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setIsEditing(true)}>Edit</DropdownMenuItem>
+            <DropdownMenuItem onClick={onDelete} className="text-destructive">
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 }

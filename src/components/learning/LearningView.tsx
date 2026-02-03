@@ -1,37 +1,42 @@
 import { useState, useEffect } from "react";
 import { LearningCard } from "./LearningCard";
 import { LearningStats } from "./LearningStats";
+import { CollectionsList } from "@/components/collections/CollectionsList";
 import { Button } from "@/components/ui/button";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { toast } from "sonner";
 import type { FlashcardDTO } from "@/types";
 import type { SuperMemoGrade } from "@/lib/supermemo";
 import { EmptyState } from "@/components/ui/empty-state";
-import { RefreshCw, BookOpen } from "lucide-react";
+import { RefreshCw, BookOpen, ArrowLeft } from "lucide-react";
 
 export function LearningView() {
+  const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [flashcards, setFlashcards] = useState<FlashcardDTO[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
+  // When a collection is selected, fetch cards for that collection
   useEffect(() => {
-    fetchDueCards();
-  }, []);
-  
-  const fetchDueCards = async () => {
+    if (selectedCollectionId) {
+      fetchDueCards(selectedCollectionId);
+    }
+  }, [selectedCollectionId]);
+
+  const fetchDueCards = async (collectionId: string) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await fetch("/api/flashcards/due");
-      
+      const response = await fetch(`/api/flashcards/due?collection_id=${collectionId}`);
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to fetch due cards");
       }
-      
+
       const data = await response.json();
       setFlashcards(data.flashcards);
       setCurrentIndex(0);
@@ -82,6 +87,22 @@ export function LearningView() {
       });
     }
   };
+
+  const handleBackToCollections = () => {
+    setSelectedCollectionId(null);
+    setFlashcards([]);
+    setCurrentIndex(0);
+    setError(null);
+  };
+
+  // Show collections list if no collection selected
+  if (!selectedCollectionId) {
+    return (
+      <div className="p-4">
+        <CollectionsList onSelectCollection={setSelectedCollectionId} />
+      </div>
+    );
+  }
   
   // Loading state
   if (loading) {
@@ -96,14 +117,22 @@ export function LearningView() {
   // Error state
   if (error) {
     return (
-      <EmptyState
-        icon={<RefreshCw className="h-10 w-10 text-muted-foreground" />}
-        title="Failed to load cards"
-        description={error}
-        action={
-          <Button onClick={fetchDueCards}>Try Again</Button>
-        }
-      />
+      <div className="p-4 space-y-4">
+        <Button variant="ghost" onClick={handleBackToCollections}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Collections
+        </Button>
+        <EmptyState
+          icon={<RefreshCw className="h-10 w-10 text-muted-foreground" />}
+          title="Failed to load cards"
+          description={error}
+          action={
+            <Button onClick={() => selectedCollectionId && fetchDueCards(selectedCollectionId)}>
+              Try Again
+            </Button>
+          }
+        />
+      </div>
     );
   }
   
@@ -111,14 +140,21 @@ export function LearningView() {
   if (flashcards.length === 0) {
     return (
       <div className="p-4 space-y-6">
+        <Button variant="ghost" onClick={handleBackToCollections}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Collections
+        </Button>
+
         <LearningStats />
-        
+
         <EmptyState
           icon={<BookOpen className="h-10 w-10 text-muted-foreground" />}
           title="All caught up!"
-          description="You have no cards due for review at the moment. Check back later or add more flashcards."
+          description="You have no cards due for review in this collection. Check back later or add more flashcards."
           action={
-            <Button onClick={fetchDueCards}>Check Again</Button>
+            <Button onClick={() => selectedCollectionId && fetchDueCards(selectedCollectionId)}>
+              Check Again
+            </Button>
           }
         />
       </div>
@@ -129,14 +165,21 @@ export function LearningView() {
   if (currentIndex >= flashcards.length) {
     return (
       <div className="p-4 space-y-6">
+        <Button variant="ghost" onClick={handleBackToCollections}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Collections
+        </Button>
+
         <LearningStats />
-        
+
         <EmptyState
           icon={<BookOpen className="h-10 w-10 text-primary" />}
           title="Session Complete!"
           description={`You've reviewed all ${flashcards.length} cards due for now.`}
           action={
-            <Button onClick={fetchDueCards}>Check for More</Button>
+            <Button onClick={() => selectedCollectionId && fetchDueCards(selectedCollectionId)}>
+              Check for More
+            </Button>
           }
         />
       </div>
@@ -146,19 +189,24 @@ export function LearningView() {
   // Active learning session
   return (
     <div className="p-4 space-y-6">
+      <Button variant="ghost" onClick={handleBackToCollections}>
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Collections
+      </Button>
+
       <LearningStats />
-      
+
       <div className="mb-4 text-sm text-muted-foreground text-center">
         Card {currentIndex + 1} of {flashcards.length}
       </div>
-      
+
       <LearningCard
         flashcard={flashcards[currentIndex]}
         onGrade={handleGrade}
         onNext={handleNext}
         isLoading={reviewLoading}
       />
-      
+
     </div>
   );
 } 

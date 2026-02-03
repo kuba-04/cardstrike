@@ -18,9 +18,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
 
+    // Parse optional collection_id from request body
+    const body = await request.json().catch(() => ({}));
+    const collectionId = body.collection_id || undefined;
+
     // Initialize service and initialize flashcards for learning
     const learningService = new FlashcardsLearningService(locals.supabase);
-    const result = await learningService.initializeFlashcardsForLearning(user.id);
+    const result = await learningService.initializeFlashcardsForLearning(user.id, collectionId);
 
     return new Response(JSON.stringify({ 
       message: `Initialized ${result.count} flashcards for learning`
