@@ -1,13 +1,16 @@
 /// <reference types="vitest" />
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
+import { render } from "@/test/test-utils";
 import { LearningView } from "../LearningView";
 import type { FlashcardDTO } from "@/types";
 
 // Mock UI components
 vi.mock("@/components/ui/card", () => {
   return {
-    Card: ({ children }: { children: React.ReactNode }) => <div data-testid="card">{children}</div>,
+    Card: ({ children, onClick, className }: { children: React.ReactNode, onClick?: () => void, className?: string }) => (
+      <div data-testid="card" onClick={onClick} className={className}>{children}</div>
+    ),
     CardHeader: ({ children, className }: { children: React.ReactNode, className?: string }) => <div data-testid="card-header">{children}</div>,
     CardTitle: ({ children, className }: { children: React.ReactNode, className?: string }) => <h3 data-testid="card-title">{children}</h3>,
     CardContent: ({ children, className }: { children: React.ReactNode, className?: string }) => <div data-testid="card-content">{children}</div>,
@@ -78,6 +81,21 @@ const mockResponses = {
     learningCards: 1,
     masteredCards: 1,
     totalReviews: 5
+  },
+  '/api/collections': {
+    collections: [
+      {
+        id: "collection-1",
+        name: "Test Collection",
+        user_id: "test-user",
+        created_at: new Date().toISOString(),
+        stats: {
+          total_cards: 2,
+          due_cards: 2,
+          mastery_color: "yellow" as const
+        }
+      }
+    ]
   }
 };
 
@@ -108,6 +126,13 @@ beforeEach(() => {
       });
     }
     
+    if (endpoint.includes('/api/collections')) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(mockResponses['/api/collections'])
+      });
+    }
+    
     return Promise.reject(new Error(`Unhandled fetch URL: ${url}`));
   });
 });
@@ -118,17 +143,18 @@ afterEach(() => {
 
 describe("LearningView", () => {
   it("fetches and displays due cards correctly", async () => {
-    render(<LearningView />);
+    const { user } = render(<LearningView />);
 
-    // Initially shows loading state
-    expect(screen.getByRole("status")).toBeInTheDocument();
-
-    // Wait for cards to load
+    // Wait for collections list to load
     await waitFor(() => {
-      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+      expect(screen.getByText("Your Collections")).toBeInTheDocument();
     }, { timeout: 3000 });
 
-    // Shows first card
+    // Click on the test collection card
+    const collectionCard = screen.getByTestId("card");
+    await user.click(collectionCard);
+
+    // Wait for cards to load
     await waitFor(() => {
       expect(screen.getByText("Card 1 Front")).toBeInTheDocument();
       expect(screen.getByText("Card 1 of 2")).toBeInTheDocument();
@@ -154,11 +180,28 @@ describe("LearningView", () => {
         });
       }
       
+      if (endpoint.includes('/api/collections')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockResponses['/api/collections'])
+        });
+      }
+      
       return Promise.reject(new Error(`Unhandled fetch URL: ${url}`));
     });
 
-    render(<LearningView />);
+    const { user } = render(<LearningView />);
 
+    // Wait for collections list to load
+    await waitFor(() => {
+      expect(screen.getByText("Your Collections")).toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    // Click on the test collection card
+    const collectionCard = screen.getByTestId("card");
+    await user.click(collectionCard);
+
+    // Wait for empty state to appear
     await waitFor(() => {
       expect(screen.getByText("All caught up!")).toBeInTheDocument();
       expect(screen.getByText(/no cards due for review/i)).toBeInTheDocument();

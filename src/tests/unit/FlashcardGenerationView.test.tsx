@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
 import { act } from "@testing-library/react";
+import { render } from "../../test/test-utils";
 import { FlashcardGenerationView } from "../../components/FlashcardGenerationView";
 import { useFlashcardGeneration } from "../../components/hooks/useFlashcardGeneration";
 import { useDemoSession } from "../../components/hooks/useDemoSession";
