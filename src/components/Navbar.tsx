@@ -40,7 +40,7 @@ export function Navbar({ activePanel, onPanelChange, variant = "default" }: Navb
 
   return (
     <nav
-      className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      className="sticky top-0 px-10 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
       role="navigation"
       aria-label="Main navigation"
     >

@@ -157,7 +157,7 @@ export function CollectionsList({ onSelectCollection, showDelete = false, showCr
           {showCreate && (
             <Button onClick={() => setShowCreateDialog(true)} variant="outline">
               <Plus className="h-4 w-4 mr-2" />
-              New Collection
+              New
             </Button>
           )}
         </div>

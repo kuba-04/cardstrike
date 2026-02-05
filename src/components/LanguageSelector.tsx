@@ -47,7 +47,7 @@ export function LanguageSelector({
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg border border-border">
       <div className="space-y-2">
         <Label htmlFor="front-language" className="text-sm font-medium">
-          Input Language (Front of Card)
+          Input Language (Front)
         </Label>
         <select
           id="front-language"
@@ -62,14 +62,11 @@ export function LanguageSelector({
             </option>
           ))}
         </select>
-        <p className="text-xs text-muted-foreground">
-          The language of the text you're providing
-        </p>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="back-language" className="text-sm font-medium">
-          Translation Language (Back of Card)
+          Translation Language (Back)
         </Label>
         <select
           id="back-language"
@@ -84,9 +81,6 @@ export function LanguageSelector({
             </option>
           ))}
         </select>
-        <p className="text-xs text-muted-foreground">
-          The language for translations/definitions
-        </p>
       </div>
     </div>
   );

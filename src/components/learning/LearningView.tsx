@@ -201,6 +201,7 @@ export function LearningView() {
       </div>
 
       <LearningCard
+        key={flashcards[currentIndex].id}
         flashcard={flashcards[currentIndex]}
         onGrade={handleGrade}
         onNext={handleNext}

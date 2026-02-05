@@ -101,23 +101,17 @@ export function FlashcardGenerationView() {
 
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold tracking-tight">Generate Flashcards</h2>
-        <p className="text-muted-foreground">
-          Paste your text below and we'll generate flashcards for you. The text should be between 100 and 10,000 characters.
-        </p>
       </div>
 
       <div className="space-y-4">
         <div>
-          <label className="text-sm font-medium mb-2 block">Collection (optional)</label>
+          <label className="text-sm font-medium mb-2 block">Collection</label>
           <CollectionSelector
             selectedCollectionId={collectionId}
             onSelectCollection={setCollectionId}
             disabled={isLoadingGeneration || !!generationId}
             allowNull={true}
           />
-          <p className="text-xs text-muted-foreground mt-1">
-            Choose a collection to organize your generated flashcards
-          </p>
         </div>
 
         <LanguageSelector

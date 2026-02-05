@@ -31,11 +31,15 @@ export function LearningCard({ flashcard, onGrade, onNext, isLoading = false }: 
       await onGrade(flashcard.id, grade);
       toast.success("Response recorded");
       setIsFlipped(false);
-      onNext();
+      // Wait for flip animation to complete before moving to next card
+      // The flip animation takes 0.6s (600ms) as defined in global.css
+      setTimeout(() => {
+        setIsGrading(false);
+        onNext();
+      }, 650); // 650ms to ensure animation fully completes
     } catch (error) {
       toast.error("Failed to record your response");
       console.error(error);
-    } finally {
       setIsGrading(false);
     }
   };
